@@ -1,0 +1,54 @@
+engagement_name: Retail Platform QE Optimization
+domain: Generic SaaS
+delivery_model: Agile
+project_posture: brownfield
+timeline_pressure: medium
+
+business_goal: Improve release decision confidence without expanding unnecessary automation scope
+quality_goal: Strengthen governance, reporting, and release readiness
+release_expectation: Frequent releases with clearer go/no-go signals
+critical_business_flows:
+  - checkout
+  - order confirmation
+  - refund handling
+
+system_type: UI-heavy product with supporting APIs
+applications_in_scope:
+  - storefront
+  - checkout service
+  - order management
+key_integrations:
+  - payment gateway
+  - notification service
+platform_notes: Existing automation estate is broad but signal quality is inconsistent
+
+existing_test_process: Established process with regular automation execution
+existing_automation_state: strong
+ci_cd_maturity: mature
+environment_maturity: strong
+test_data_maturity: moderate
+
+known_constraints:
+  - fragmented reporting ownership
+regulatory_or_compliance_needs: []
+delivery_risks:
+  - subjective release decisions
+  - noisy quality signals
+missing_information:
+  - defect leakage trend by release
+
+requirements_available: yes - delivery scope summary exists
+api_docs_available: yes - key interface docs available
+existing_test_cases_available: yes - large automated and manual suites exist
+automation_assets_available: yes - established automation frameworks exist
+production_or_operational_feedback_available: yes - limited operational metrics available
+
+ai_adoption_posture: supportive
+ai_governance_constraints:
+  - human approval required for release decisions
+human_review_expectations:
+  - release manager and QE lead review required
+
+strategy_depth: standard
+primary_audience: delivery leadership and QE leadership
+desired_output_format: markdown

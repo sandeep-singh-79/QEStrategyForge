@@ -1,0 +1,52 @@
+engagement_name: Core Policy QE Strategy
+domain: Insurance
+delivery_model: Hybrid
+project_posture: brownfield
+timeline_pressure: high
+
+business_goal: Improve policy administration quality with limited pre-discovery visibility
+quality_goal: Define a realistic conditional strategy
+release_expectation: Current release model unclear
+critical_business_flows:
+  - policy issuance
+  - renewal processing
+
+system_type: legacy enterprise
+applications_in_scope:
+  - policy admin
+key_integrations: []
+platform_notes: Limited architecture detail available pre-discovery
+
+existing_test_process: unknown
+existing_automation_state: unknown
+ci_cd_maturity: unknown
+environment_maturity: unknown
+test_data_maturity: unknown
+
+known_constraints:
+  - limited pre-discovery access
+regulatory_or_compliance_needs:
+  - auditability
+delivery_risks:
+  - hidden integration risk
+missing_information:
+  - architecture details
+  - current automation baseline
+  - CI/CD toolchain
+  - test inventory
+
+requirements_available: yes - high-level RFP summary only
+api_docs_available: no - not available
+existing_test_cases_available: no - not available
+automation_assets_available: no - not available
+production_or_operational_feedback_available: no - not available
+
+ai_adoption_posture: restricted
+ai_governance_constraints:
+  - human review mandatory
+human_review_expectations:
+  - all recommendations provisional until discovery
+
+strategy_depth: standard
+primary_audience: presales and QE leadership
+desired_output_format: markdown

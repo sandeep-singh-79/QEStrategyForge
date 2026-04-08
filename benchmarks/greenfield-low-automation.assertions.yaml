@@ -1,0 +1,14 @@
+must_include_labels:
+  - "Project Posture: greenfield"
+  - "Current Automation State: none"
+  - "Current CI/CD Maturity: manual"
+  - "AI Adoption Posture: supportive"
+
+must_include_substrings:
+  - "Shift-Left Stance:"
+  - "Layering Priority:"
+  - "Automation Adoption Path:"
+
+must_not_include_substrings:
+  - "Brownfield Transition Strategy:"
+  - "Project Posture: brownfield"

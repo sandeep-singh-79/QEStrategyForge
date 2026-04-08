@@ -1,0 +1,58 @@
+engagement_name: Claims Modernization QE Strategy
+domain: Insurance
+delivery_model: Agile
+project_posture: brownfield
+timeline_pressure: high
+
+business_goal: Modernize claims processing without increasing regression risk
+quality_goal: Improve release confidence and reduce leakage
+release_expectation: Bi-weekly release readiness with quality gates
+critical_business_flows:
+  - claim creation
+  - claim adjudication
+  - payout processing
+
+system_type: API-first with supporting UI
+applications_in_scope:
+  - claims portal
+  - claims service layer
+  - payment integration
+key_integrations:
+  - policy platform
+  - payment gateway
+platform_notes: Legacy UI still exists around a partly modernized service layer
+
+existing_test_process: Manual-heavy with some automation support
+existing_automation_state: partial
+ci_cd_maturity: partial
+environment_maturity: moderate
+test_data_maturity: weak
+
+known_constraints:
+  - incomplete documentation
+  - limited QE capacity
+regulatory_or_compliance_needs:
+  - auditability
+  - privacy-sensitive test data handling
+delivery_risks:
+  - integration instability
+  - weak regression confidence
+missing_information:
+  - production defect leakage trend
+  - full API coverage baseline
+
+requirements_available: yes - feature summaries available
+api_docs_available: yes - partial OpenAPI coverage
+existing_test_cases_available: yes - manual regression pack available
+automation_assets_available: yes - partial API and UI automation exists
+production_or_operational_feedback_available: no - not yet collected
+
+ai_adoption_posture: cautious
+ai_governance_constraints:
+  - human approval required for final strategy sign-off
+human_review_expectations:
+  - QE lead review required for all AI-generated strategy sections
+
+strategy_depth: standard
+primary_audience: QE lead and delivery leadership
+desired_output_format: markdown

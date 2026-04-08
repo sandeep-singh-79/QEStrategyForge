@@ -1,0 +1,53 @@
+engagement_name: New Digital Onboarding Platform
+domain: Generic SaaS
+delivery_model: Agile
+project_posture: greenfield
+timeline_pressure: medium
+
+business_goal: Launch a new onboarding platform with strong delivery quality from day one
+quality_goal: Establish fast feedback and prevent defects early
+release_expectation: Frequent releases with automated quality signals
+critical_business_flows:
+  - user registration
+  - identity verification
+  - onboarding approval
+
+system_type: API-first microservices with thin UI
+applications_in_scope:
+  - onboarding ui
+  - onboarding api
+  - identity integration service
+key_integrations:
+  - identity provider
+  - notification service
+platform_notes: New platform; architecture and delivery model are still being shaped
+
+existing_test_process: no established process
+existing_automation_state: none
+ci_cd_maturity: manual
+environment_maturity: moderate
+test_data_maturity: moderate
+
+known_constraints:
+  - small delivery team
+regulatory_or_compliance_needs: []
+delivery_risks:
+  - integration immaturity
+  - evolving requirements
+missing_information:
+  - final non-functional targets
+
+requirements_available: yes - product scope summary exists
+api_docs_available: no - contracts still emerging
+existing_test_cases_available: no - no existing test assets
+automation_assets_available: no - no current automation assets
+production_or_operational_feedback_available: no - product not live
+
+ai_adoption_posture: supportive
+ai_governance_constraints: []
+human_review_expectations:
+  - engineering lead approval required
+
+strategy_depth: standard
+primary_audience: engineering manager and QE lead
+desired_output_format: markdown

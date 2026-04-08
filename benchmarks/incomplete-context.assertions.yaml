@@ -1,0 +1,14 @@
+must_include_labels:
+  - "Project Posture: brownfield"
+  - "Current Automation State: unknown"
+  - "Current CI/CD Maturity: unknown"
+  - "AI Adoption Posture: restricted"
+
+must_include_substrings:
+  - "Missing Information:"
+  - "Assumptions"
+  - "Open Questions"
+
+must_not_include_substrings:
+  - "current pipeline gates already enforce release quality"
+  - "existing automation estate provides strong baseline"

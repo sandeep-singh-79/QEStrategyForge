@@ -1,0 +1,9 @@
+.tracecov/
+.tracecov-phase4-final/
+.tracecov-main/
+.tracecov-main-harden/
+tests/.tmp/
+outputs/
+__pycache__/
+*.pyc
+*.cover

@@ -1,0 +1,15 @@
+must_include_labels:
+  - "Project Posture: brownfield"
+  - "Current Automation State: strong"
+  - "Current CI/CD Maturity: mature"
+  - "AI Adoption Posture: supportive"
+
+must_include_substrings:
+  - "Target Automation State:"
+  - "quality gate"
+  - "release"
+  - "reporting"
+
+must_not_include_substrings:
+  - "Current Automation State: none"
+  - "build the automation foundation from scratch"

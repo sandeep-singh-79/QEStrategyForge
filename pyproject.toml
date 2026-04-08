@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-test-strategy-generator"
+version = "0.1.0"
+description = "Rule-guided QE strategy generator"
+requires-python = ">=3.13"
+dependencies = [
+  "PyYAML>=6.0",
+]
+
+[project.scripts]
+ai-test-strategy-generator = "ai_test_strategy_generator.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
