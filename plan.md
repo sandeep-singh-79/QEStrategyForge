@@ -2,7 +2,7 @@
 
 > **Purpose:** Track the active planning and execution steps for the `ai-test-strategy-generator` repository.
 > **Scope:** Session-specific or cycle-specific. Refresh as milestones move and promote durable outcomes into `claude-memory/`.
-> **Last Updated:** 2026-04-08
+> **Last Updated:** 2026-04-09
 
 ---
 
@@ -11,9 +11,9 @@
 | Field | Value |
 |---|---|
 | Capability | ai-test-strategy-generator |
-| Objective | Complete Phase 5 artifact-folder hardening and prepare the next milestone |
-| Current Phase | Phase 5 Implementation |
-| Current Focus | Phase 5 hardened artifact-folder MVP baseline |
+| Objective | Phase 6 bounded LLM integration — delivered |
+| Current Phase | Phase 6 Complete |
+| Current Focus | Phase 7 planning (real LLM provider / CLI expansion) |
 
 ---
 
@@ -51,16 +51,19 @@
 | T28 - Artifact Mapping And Merge | Implement Slice 5.4 to 5.5 with tests | Complete | Artifact mapping and normalized merge logic added |
 | T29 - Artifact End-To-End Flow | Implement Slice 5.6 to 5.7 with tests | Complete | Artifact-folder path now reuses the main strategy pipeline and committed benchmark assets exist |
 | T30 - Phase 5 Hardening | Close deterministic artifact-folder edge cases | Complete | Empty manifests, invalid posture, directory paths, path traversal, and incomplete artifact sets now fail predictably |
+| T31 - Phase 6 Plan | Define bounded LLM integration on top of deterministic core | Complete | `docs/PHASE-6-IMPLEMENTATION-PLAN.md` added |
+| T32 - Phase 6 Backlog | Create detailed execution backlog for bounded LLM integration | Complete | `docs/PHASE-6-IMPLEMENTATION-BACKLOG.md` added |
+| T33 - Phase 6 Build | Deliver all 7 Phase 6 slices (mode contract through hardening) | Complete | 128 tests green; new modules: prompt_builder, llm_client, llm_flow |
+| T34 - Phase 7 Build | Deliver all 9 Phase 7 slices (real providers, CLI composition root, live tests, coverage hardening) | Complete | 240 tests green + 2 live; new modules: config_loader, ollama_client, openai_client, gemini_client, client_factory; cli.py rewritten as composition root; RuntimeError fallback fixed; glm-5:cloud live validated |
 
 ---
 
 ## Immediate Next Actions
 
-1. Decide whether Phase 6 should be LLM integration or a second artifact benchmark
-2. Keep deterministic benchmark validation as the acceptance gate for future changes
-3. Reuse the existing Phase 4 and Phase 5 pipeline rather than building a second path
-4. Keep current file-type support limited to `.md`, `.yaml/.yml`, and `.json` until a new phase expands it
-5. Follow TDD and deterministic validation for every future slice
+1. Decide Phase 8 focus: prompt engineering + content-level LLM assertions, OR live tests for OpenAI/Gemini, OR extended artifact types
+2. If prompt engineering: create `prompts/` folder with versioned templates, implement per-scenario specialization
+3. If live provider coverage: add `tests/test_live_openai.py` and `tests/test_live_gemini.py` mirroring the live Ollama pattern
+4. Continue TDD + deterministic validation for every new slice
 
 ---
 
@@ -78,12 +81,15 @@
 - Slices 4.1, 4.2, and 4.3 are now complete with a working CLI validation path.
 - Code implementation should follow KISS and reuse-first principles.
 - Code should be tested before a slice is marked complete, with pass/fail and coverage details recorded.
-- Current tested baseline: 48 tests passed, 0 failed.
-- Current tested baseline after starting Phase 5: 56 tests passed, 0 failed.
-- Phase 4 hardening is now complete.
-- Gate E is satisfied because 4 benchmark scenarios now pass deterministically end-to-end.
-- Final Phase 4 trace coverage in `.tracecov-phase4-final/` shows 0 missing traced lines for current production modules, including `main.py`, `models.py`, and `renderer.py`.
-- Phase 5 mapping baseline is now green: 60 tests passed, 0 failed.
-- Phase 5 artifact-flow baseline is now green: 63 tests passed, 0 failed.
+- Phase 6 LLM mode selection: CLI flag `--mode deterministic|llm_assisted` (default: deterministic)
+- Phase 6 fallback strategy: constrained repair pass → deterministic renderer → explicit failure
+- Phase 6 LLM client: provider-agnostic Protocol; future providers (gpt-5.4, Gemini, Ollama/GLM4.7) plug in without changing orchestration
+- Phase 7 provider config: `strategy.config.yaml` holds non-secret defaults; `STRATEGY_LLM_API_KEY` env var for secrets — security invariant, not preference
+- Phase 7 CLI: composition root pattern; `_build_provider_config()` implements 4-layer merge (defaults → config file → env vars → CLI flags)
+- Phase 7 fallback fix: RuntimeError from `generate()` is caught in `llm_flow.py`, sets `markdown=""`, triggers repair→deterministic fallback chain (exit code 3)
+- Phase 7 test baseline: 240 non-live tests + 2 live tests (glm-5:cloud via Ollama, ~152 s)
+- Phase 7 live model: `glm-5:cloud` via Ollama; override with `STRATEGY_LLM_MODEL` env var or `--model` CLI flag
 - Phase 5 hardening baseline is now green: 69 tests passed, 0 failed.
-- Phase 5 hardening trace coverage is recorded in `.tracecov-phase5-hardening/`.
+- Phase 6 baseline: 128 tests passed, 0 failed.
+- Phase 6 planning now exists in `docs/PHASE-6-IMPLEMENTATION-PLAN.md`.
+- Phase 6 backlog now exists in `docs/PHASE-6-IMPLEMENTATION-BACKLOG.md`.

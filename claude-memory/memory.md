@@ -47,25 +47,36 @@ Current state, decisions, and active priorities for the `ai-test-strategy-genera
 - AGPL is the closest fit to the desired reciprocity behavior, but it does not require upstream pull requests back to this specific repository.
 
 ## Active Next Work
-- Keep MVP ingestion constrained to structured input plus small artifact-folder support.
-- Decide the next post-Phase-5 milestone.
-- Decide how bounded LLM synthesis should fit on top of the deterministic core.
-- Decide whether the next step is LLM integration or a second artifact benchmark.
-- Enforce deterministic tests and validations for every future slice.
-- Follow TDD plus KISS, DRY, YAGNI, SOLID, and reuse-first implementation rules during future phases.
+- Phase 7 is now complete (all 9 slices delivered, 240 tests green, 2 live Ollama tests pass).
+- Candidate directions for Phase 8:
+  - Prompt engineering: versioned prompt templates, per-scenario specialization, prompt optimization loop
+  - Content-level benchmark assertions for LLM path (real provider outputs)
+  - Quality scoring model (fluency, accuracy, structural coverage vs FakeLLMClient baseline)
+  - OpenAI live integration test (mirrors test_live_ollama.py for OpenAI/Gemini)
+  - Extended artifact support (.pdf, .docx)
+  - CODEX.md reference document (deferred from Phase 6)
 
 ## Blockers
 - No setup blocker.
 - Git in this environment may leave stray lock files in `.git` during some commands; if Git operations fail, inspect lock-file state first.
 
+## Known Deferred Technical Debt
+- **Prompt versioning not tracked**: prompts are built dynamically with no version history.
+- **Per-scenario prompt specialization**: single prompt template regardless of greenfield/brownfield posture.
+- **Prompt optimization loop**: Karpathy-style loop deferred until real evaluator + content-level assertions exist.
+- **Content-level benchmark assertions for LLM path**: FakeLLMClient is structural only; real scenario pass/fail needs a live provider.
+- **Extended artifact types**: `.pdf`, `.docx`, `.xlsx`, `.csv` still not supported.
+- **Live integration tests for OpenAI and Gemini**: only Ollama has a live test; OpenAI/Gemini integration tests deferred.
+- **CODEX.md reference**: deferred from Phase 6, still not created.
+- **Multi-agent orchestration**: no autonomous agent loop.
+
 ## Implementation Snapshot
-- Slices 4.1 to 4.3 are complete.
-- Slice 4.4 is complete.
-- Slice 4.5 is complete.
-- Slice 4.7 is complete.
-- Slice 4.8 is complete.
-- Slice 4.9 is complete.
-- Slice 4.10 is complete.
+- Phases 1–7 complete.
+- Phase 7 delivered: ProviderConfig + config_loader (7.1), CLI full wiring + DI routing (7.2), OllamaClient (7.3), OpenAIClient (7.4), GeminiClient (7.5), client factory (7.6), live Ollama integration test with glm-5:cloud (7.7), artifact_mapping/loader coverage hardening to 100% (7.8), greenfield artifact benchmark (7.9).
+- Test baseline: 240 non-live tests passing. 2 live Ollama tests passing (glm-5:cloud, ~2.5 min).
+- Key new modules: config_loader.py, ollama_client.py, openai_client.py, gemini_client.py, client_factory.py.
+- CLI is now a full composition root: builds ProviderConfig from config file → env vars → CLI flags, creates LLMClient via factory, injects into flow functions.
+- LLM flow resilience: RuntimeError from any provider is caught and triggers deterministic fallback (empty string → repair → deterministic renderer).
 - Slice 4.11 is complete.
 - Slice 4.6 is complete.
 - Slice 4.12 is complete.
@@ -102,6 +113,23 @@ Current state, decisions, and active priorities for the `ai-test-strategy-genera
   - directory references now fail as invalid artifact paths
   - path traversal remains blocked
   - incomplete artifact sets fail through the reused validation path
+- Phase 6 implementation planning now exists in `docs/PHASE-6-IMPLEMENTATION-PLAN.md`.
+- Phase 6 backlog now exists in `docs/PHASE-6-IMPLEMENTATION-BACKLOG.md`.
+- Phase 6 direction is:
+  - deterministic core remains primary
+  - LLM is bounded to synthesis, not control
+  - structural validation and fallback remain mandatory
+- Phase 6 is now complete. All 7 slices delivered:
+  - Slice 6.1: GENERATION_MODES, validate_mode, LLMConfig in models.py; --mode CLI flag in cli.py
+  - Slice 6.2: prompt_builder.py (builds bounded prompts from normalized input + classifications + rules)
+  - Slice 6.3: llm_client.py (LLMClient Protocol, GenerationRequest/Response, FakeLLMClient)
+  - Slice 6.4: llm_flow.py (run_llm_benchmark_flow, run_llm_input_package_flow)
+  - Slice 6.5: _repair_output (constrained repair) + deterministic renderer fallback in llm_flow.py
+  - Slice 6.6: benchmark compatibility confirmed — fake client passes structural validation + brownfield assertions
+  - Slice 6.7: hardening tests covering missing files, client errors, fallback exhaustion, content specificity
+- Phase 6 full test baseline: 128 tests passed, 0 failed (59 new Phase 6 tests)
+- LLM client is provider-agnostic; future providers (gpt-5.4, Gemini, Ollama/GLM4.7) plug in via LLMClient Protocol
+- Fallback chain: LLM output → constrained repair → deterministic renderer → explicit failure
 - Planned Phase 5 MVP file-type support:
   - `.md`
   - `.yaml`

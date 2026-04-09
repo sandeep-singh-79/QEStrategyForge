@@ -4,6 +4,17 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+GENERATION_MODES: frozenset[str] = frozenset({"deterministic", "llm_assisted"})
+
+
+def validate_mode(mode: str) -> None:
+    """Raise ValueError for unsupported generation mode values."""
+    if mode not in GENERATION_MODES:
+        raise ValueError(
+            f"Unsupported generation mode: {mode!r}. "
+            f"Valid modes: {sorted(GENERATION_MODES)}"
+        )
+
 
 @dataclass(slots=True)
 class InputPackage:
@@ -67,6 +78,49 @@ class StrategyDocument:
             markdown_lines.append("")
 
         return "\n".join(_drop_trailing_blank_lines(markdown_lines)) + "\n"
+
+
+@dataclass(slots=True)
+class LLMConfig:
+    model: str
+    max_tokens: int = 4096
+    temperature: float = 0.0
+
+    def __post_init__(self) -> None:
+        if not self.model or not self.model.strip():
+            raise ValueError("LLMConfig.model must be a non-empty string")
+        if self.max_tokens <= 0:
+            raise ValueError(
+                f"LLMConfig.max_tokens must be a positive integer, got {self.max_tokens}"
+            )
+        if not 0.0 <= self.temperature <= 2.0:
+            raise ValueError(
+                f"LLMConfig.temperature must be between 0.0 and 2.0, got {self.temperature}"
+            )
+
+
+@dataclass(slots=True)
+class ProviderConfig:
+    provider: str = "ollama"
+    model: str = "glm4:latest"
+    base_url: str = "http://localhost:11434"
+    api_key: str | None = None
+    temperature: float = 0.0
+    max_tokens: int = 4096
+
+    def __post_init__(self) -> None:
+        if not self.provider or not self.provider.strip():
+            raise ValueError("ProviderConfig.provider must be a non-empty string")
+        if not self.model or not self.model.strip():
+            raise ValueError("ProviderConfig.model must be a non-empty string")
+        if not 0.0 <= self.temperature <= 2.0:
+            raise ValueError(
+                f"ProviderConfig.temperature must be between 0.0 and 2.0, got {self.temperature}"
+            )
+        if self.max_tokens <= 0:
+            raise ValueError(
+                f"ProviderConfig.max_tokens must be a positive integer, got {self.max_tokens}"
+            )
 
 
 ClassificationResult = dict[str, str]
