@@ -1,6 +1,6 @@
 # AI Test Strategy Generator - Learning Guide
 
-Last Updated: 2026-04-08
+Last Updated: 2026-04-09
 
 ## Purpose
 
@@ -195,6 +195,28 @@ Do not trust AI blindly for:
 - complete coverage claims
 - release approval
 
+## How the Bounded LLM Synthesis Layer Works
+
+This repo uses a bounded synthesis model, not open-ended generation.
+
+The LLM receives a structured context bundle — the same normalized document the deterministic renderer uses — and is asked to produce a markdown strategy document in a defined format. It does not have free access to the prompt shape or output schema.
+
+There are two safety layers:
+
+1. **Structural validation**: the LLM output is validated against the same required-section rules as the deterministic renderer. If it fails, a constrained repair pass runs to fill gaps.
+2. **Deterministic fallback**: if the LLM call fails entirely (network error, timeout, provider error) or if repair still fails, the system falls back to the deterministic renderer automatically. The caller receives a `3` exit code indicating fallback was used.
+
+This means the system always produces a valid strategy document — either LLM-assisted or deterministic. The LLM adds synthesis quality; it is never a point of failure.
+
+The provider is selected at runtime:
+- `--provider ollama` — local inference via Ollama REST API
+- `--provider openai` — OpenAI-compatible APIs (gpt-4o, Azure OpenAI, etc.)
+- `--provider gemini` — Google Gemini REST API
+
+All three implement the same `LLMClient` Protocol. Switching providers does not change the orchestration logic.
+
+A key design rule: provider configuration is resolved in four layers (defaults → config file → env vars → CLI flags). API keys and secrets always come from environment variables — never from config files.
+
 ## Learning Exercises For This Repo
 
 1. Compare strategy for:
@@ -213,6 +235,21 @@ Do not trust AI blindly for:
 - AI-friendly organization
 - low-trust, compliance-heavy organization
 
+5. Compare LLM-assisted vs deterministic output for:
+- the brownfield-partial-automation benchmark
+- the greenfield-low-automation benchmark
+- observe what the LLM adds vs what the deterministic renderer always produces
+
+6. Inspect what happens when the LLM is unreachable:
+- set `--provider ollama --model does-not-exist`
+- observe exit code `3` and that a valid strategy document is still written
+- understand why the fallback chain matters for reliability
+
+7. Try artifact-folder ingestion:
+- use `benchmarks/artifact-brownfield/` as input
+- compare the output to the equivalent YAML input path
+- read the manifest and understand how document types map to input fields
+
 ## Expected Learning Outcome
 
 By working through this repo, you should learn:
@@ -220,3 +257,6 @@ By working through this repo, you should learn:
 - how strategy changes with risk and constraints
 - how automation fits into the bigger lifecycle
 - how AI can assist without replacing judgment
+- how bounded LLM synthesis differs from open-ended generation
+- how to design a system that degrades gracefully when LLM providers fail
+- how artifact-folder ingestion maps unstructured documents to a structured strategy context

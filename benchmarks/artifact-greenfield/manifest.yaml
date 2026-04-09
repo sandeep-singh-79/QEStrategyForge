@@ -1,0 +1,19 @@
+engagement_name: Payments Platform QE Strategy
+domain: FinTech
+project_posture: greenfield
+
+artifacts:
+  - type: project_summary
+    path: project-summary.md
+  - type: requirements_summary
+    path: requirements-summary.md
+  - type: system_landscape
+    path: system-landscape.md
+  - type: api_summary
+    path: api-summary.json
+  - type: current_test_state
+    path: current-test-state.md
+
+overrides:
+  ai_adoption_posture: supportive
+  strategy_depth: standard

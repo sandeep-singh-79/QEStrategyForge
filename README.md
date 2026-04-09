@@ -1,16 +1,22 @@
 # AI Test Strategy Generator
 
-`ai-test-strategy-generator` is a deterministic MVP that turns structured engagement context into a full-lifecycle QE strategy document.
+`ai-test-strategy-generator` generates full-lifecycle QE strategy documents from structured engagement context.
 
-It currently focuses on:
-- input validation
-- context classification
-- deterministic rule application
-- markdown strategy rendering
-- structural validation
-- benchmark-based pass/fail evaluation
+It supports two generation modes:
+- **Deterministic mode** — explicit rules, fully reproducible, no LLM required
+- **LLM-assisted mode** — bounded synthesis through OpenAI-compatible, Gemini, or Ollama providers, with automatic deterministic fallback on failure
 
-The current implementation is intentionally pre-LLM. It focuses on making strategy logic explicit, testable, and benchmarkable before adding broader ingestion or synthesis layers.
+Both modes share the same input contract, validation pipeline, benchmark assertion layer, and output contract.
+
+Key capabilities:
+- Input validation with fast failure on missing or malformed fields
+- Context classification across greenfield, brownfield, and partial-automation scenarios
+- Deterministic rule engine producing engagement-specific strategies
+- Artifact-folder ingestion: load project summaries, API docs, test-state files, and requirements from a folder
+- LLM-assisted synthesis over a normalized context bundle
+- Four-layer provider configuration (built-in defaults → config file → env vars → CLI flags)
+- Benchmark-driven pass/fail evaluation on all scenarios
+- 240+ automated tests; 100% pass rate required before merge
 
 ## Repo Layout
 
@@ -27,29 +33,85 @@ The current implementation is intentionally pre-LLM. It focuses on making strate
 - `plan.md`
   Development execution tracker.
 
-## First-Time Usage
+## Quick Start
 
-Use the CLI validation path:
+Set `PYTHONPATH` once:
 
 ```powershell
 $env:PYTHONPATH='src'
+```
+
+Deterministic path — structured YAML input:
+
+```powershell
 python -m ai_test_strategy_generator.cli benchmarks\brownfield-partial-automation.input.yaml
 ```
 
-Run the test suite:
+Deterministic path — artifact folder:
 
 ```powershell
-$env:PYTHONPATH='src'
-python -m unittest discover -s tests -v
+python -m ai_test_strategy_generator.cli --artifact-folder benchmarks\artifact-brownfield --assertions benchmarks\artifact-brownfield.assertions.yaml
 ```
 
-## Where To Look Next
+LLM-assisted path — Ollama:
+
+```powershell
+python -m ai_test_strategy_generator.cli benchmarks\brownfield-partial-automation.input.yaml --assertions benchmarks\brownfield-partial-automation.assertions.yaml --provider ollama --model glm-5:cloud
+```
+
+LLM-assisted path — OpenAI:
+
+```powershell
+$env:STRATEGY_LLM_API_KEY='sk-...'
+python -m ai_test_strategy_generator.cli benchmarks\brownfield-partial-automation.input.yaml --provider openai --model gpt-4o
+```
+
+Run the test suite (excluding live provider tests):
+
+```powershell
+python -m pytest tests/ --ignore=tests/test_live_ollama.py -q
+```
+
+Run live Ollama tests (requires a running Ollama instance):
+
+```powershell
+python -m pytest tests/test_live_ollama.py -v
+```
+
+## Configuration
+
+Provider defaults can be placed in a `strategy.config.yaml` file:
+
+```yaml
+provider: ollama
+model: glm-5:cloud
+base_url: http://localhost:11434
+temperature: 0.0
+max_tokens: 4096
+```
+
+API keys must always come from the `STRATEGY_LLM_API_KEY` environment variable, never from config files.
+
+CLI flags (`--provider`, `--model`, `--base-url`, `--temperature`, `--max-tokens`) override everything.
+
+## Documentation
 
 - [Usage Guide](docs/USAGE-GUIDE.md)
+- [Learning Guide](docs/LEARNING-GUIDE.md)
 - [Validation Harness](docs/VALIDATION-HARNESS.md)
 - [Decision Rules](docs/DECISION-RULES.md)
-- [Phase 4 Backlog](docs/PHASE-4-IMPLEMENTATION-BACKLOG.md)
+- [Input Template](docs/V1-INPUT-TEMPLATE.md)
+- [Output Template](docs/V1-OUTPUT-TEMPLATE.md)
 - [Publishing Checklist](docs/PUBLISHING-CHECKLIST.md)
+
+## Development Status
+
+As of Phase 7 (2026-04-09):
+- 240 non-live automated tests passing
+- Live Ollama integration validated with `glm-5:cloud`
+- OpenAI-compatible and Gemini clients implemented (live tests deferred)
+- Artifact-folder ingestion: 100% statement coverage
+- All four benchmark scenarios pass deterministically; artifact-brownfield and artifact-greenfield pass end-to-end
 
 ## Publishing Notes
 

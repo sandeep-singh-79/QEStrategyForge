@@ -84,3 +84,30 @@ Reload context from files when:
 - another agent or the user may have changed files
 - the thread feels inconsistent with the files
 - a major code, architecture, or repo-structure decision is about to be made
+
+## Ingestion Rules
+
+- All file loading that accepts user-provided paths must use `Path.resolve()` then `is_relative_to(root)`. Neither alone is sufficient. No exceptions.
+- Any new multi-file ingestion path must validate the manifest contract before opening any artifact file. Fail early on structural problems.
+- For Phase 5 and later, every ingestion path must have deterministic validation and deterministic tests before it is considered complete.
+- Coverage below 90% on any ingestion module (`artifact_loader`, `artifact_mapping`, or future loaders) is a hardening signal requiring a dedicated hardening slice before new features are added to that module.
+
+## Output Contract Rules
+
+- `REQUIRED_HEADINGS` and `REQUIRED_LABELS` in `output_validator.py` must be stable before any LLM integration work begins.
+- Any change to either list is a breaking change. All dependent tests and benchmark assertion files must be updated in the same slice.
+- Structural validation must use exact string matching only. Fuzzy or regex matching is not permitted.
+
+## LLM Integration Rules
+
+- Every prompt from `prompt_builder` must include: the full output contract (headings + labels), a no-invention instruction, an assumption-surfacing instruction, and a do-not-contradict instruction. Omitting any one is non-compliant.
+- The repair pass (`_repair_output`) is structural-only: placeholder text for missing headings, `not specified` for missing labels. It must never synthesise content.
+- `FakeLLMClient` is for structural and infrastructure testing only. Never use it to assert scenario-specific content accuracy. Content-level assertions require a real provider or a scenario-specific fake.
+- Provider-specific code (API keys, base URLs, HTTP clients) belongs only in concrete client implementations, never in orchestration code. Credentials come from environment variables only.
+
+## Test And Benchmark Rules
+
+- Test temporary files must use `tests/.tmp/`. System temp directories have caused reliability issues in this repo and must not be reintroduced.
+- Committed benchmark folders and input files are regression anchors. Do not delete or structurally modify them without a corresponding test update.
+- When a new flow function is added, wire its CLI entry point in the same slice or log it immediately in `claude-memory/notes.md` under the Deferred Items Log with the target phase named explicitly.
+- Deferred items must be logged in the same session the deferral is decided. Items not logged are not deferred — they are lost.

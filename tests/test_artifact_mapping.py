@@ -185,5 +185,162 @@ class ArtifactMappingTests(unittest.TestCase):
         self.assertIn("conflicting values", str(exc.exception).lower())
 
 
+class ArtifactMappingCoverageHardeningTests(unittest.TestCase):
+    """Targeted tests for previously uncovered branches in artifact_mapping.py."""
+
+    def _minimal_bundle(self, documents: list) -> "ArtifactBundle":
+        from ai_test_strategy_generator.models import ArtifactBundle, ArtifactManifest
+        manifest = ArtifactManifest(
+            source_path=Path("artifacts/manifest.yaml"),
+            engagement_name="Test Engagement",
+            domain="Tech",
+            project_posture="greenfield",
+            artifacts=[],
+            overrides={},
+        )
+        return ArtifactBundle(
+            root_path=Path("artifacts"),
+            manifest=manifest,
+            documents=documents,
+        )
+
+    # -- line 69: md document with non-string content --
+    def test_md_document_with_non_string_content_raises(self) -> None:
+        from ai_test_strategy_generator.artifact_mapping import ArtifactMappingError, _map_document
+        doc = ArtifactDocument("project_summary", Path("p.md"), "md", 123)
+        with self.assertRaises(ArtifactMappingError) as ctx:
+            _map_document(doc)
+        self.assertIn("text content", str(ctx.exception).lower())
+
+    # -- line 73: yaml/json document with non-dict content --
+    def test_json_document_with_non_dict_content_raises(self) -> None:
+        from ai_test_strategy_generator.artifact_mapping import ArtifactMappingError, _map_document
+        doc = ArtifactDocument("api_summary", Path("a.json"), "json", "unexpected string")
+        with self.assertRaises(ArtifactMappingError) as ctx:
+            _map_document(doc)
+        self.assertIn("mapping content", str(ctx.exception).lower())
+
+    # -- lines 86-87: blank lines interspersed in markdown --
+    def test_markdown_with_blank_lines_parsed_correctly(self) -> None:
+        from ai_test_strategy_generator.artifact_mapping import _map_markdown_document
+        text = "\nDelivery Model: Agile\n\nTimeline Pressure: high\n\n"
+        result = _map_markdown_document(text)
+        self.assertEqual(result["delivery_model"], "Agile")
+        self.assertEqual(result["timeline_pressure"], "high")
+
+    # -- line 100: inline value on a list-field line (e.g. "Critical Business Flows: flow1") --
+    def test_inline_list_value_captured(self) -> None:
+        from ai_test_strategy_generator.artifact_mapping import _map_markdown_document
+        text = "Critical Business Flows: claims intake\n- claim adjudication\n"
+        result = _map_markdown_document(text)
+        self.assertIn("claims intake", result["critical_business_flows"])
+        self.assertIn("claim adjudication", result["critical_business_flows"])
+
+    # -- line 108: line containing ":" but matching neither scalar nor list map (fallthrough) --
+    def test_unrecognised_label_silently_ignored(self) -> None:
+        from ai_test_strategy_generator.artifact_mapping import _map_markdown_document
+        # "Unknown Label" is not in either map; must not raise and must not pollute result
+        text = "Unknown Label: some value\nDelivery Model: Agile\n"
+        result = _map_markdown_document(text)
+        self.assertEqual(result["delivery_model"], "Agile")
+        self.assertNotIn("Unknown Label", result)
+
+    # -- line 108 branch: line WITHOUT ":" entirely --
+    def test_markdown_line_without_colon_ignored(self) -> None:
+        from ai_test_strategy_generator.artifact_mapping import _map_markdown_document
+        text = "## Heading\nDelivery Model: Agile\nsome plain text line\n"
+        result = _map_markdown_document(text)
+        self.assertEqual(result["delivery_model"], "Agile")
+
+    # -- lines 121-122 + 133-139: list merge when both documents contribute to a list field --
+    def test_list_field_merged_across_two_documents(self) -> None:
+        from ai_test_strategy_generator.artifact_mapping import map_artifact_bundle
+        bundle = self._minimal_bundle([
+            ArtifactDocument(
+                "requirements_summary",
+                Path("artifacts/req1.md"),
+                "md",
+                "Critical Business Flows:\n- flow A\n",
+            ),
+            ArtifactDocument(
+                "system_landscape",
+                Path("artifacts/req2.md"),
+                "md",
+                "Critical Business Flows:\n- flow B\n",
+            ),
+        ])
+        result = map_artifact_bundle(bundle)
+        flows = result.normalized["critical_business_flows"]
+        self.assertIn("flow A", flows)
+        self.assertIn("flow B", flows)
+
+    def test_merge_lists_deduplication(self) -> None:
+        from ai_test_strategy_generator.artifact_mapping import _merge_lists
+        merged = _merge_lists(["a", "b"], ["b", "c"])
+        self.assertEqual(merged, ["a", "b", "c"])
+
+    def test_merge_lists_non_list_existing(self) -> None:
+        from ai_test_strategy_generator.artifact_mapping import _merge_lists
+        merged = _merge_lists("a", ["b", "c"])
+        self.assertIn("a", merged)
+        self.assertIn("b", merged)
+
+    def test_merge_lists_non_list_incoming(self) -> None:
+        from ai_test_strategy_generator.artifact_mapping import _merge_lists
+        merged = _merge_lists(["a"], "b")
+        self.assertIn("a", merged)
+        self.assertIn("b", merged)
+
+    # -- line 144: _is_empty with None value --
+    def test_is_empty_none(self) -> None:
+        from ai_test_strategy_generator.artifact_mapping import _is_empty
+        self.assertTrue(_is_empty(None))
+
+    # -- lines 147-148: _is_empty with empty/blank string --
+    def test_is_empty_blank_string(self) -> None:
+        from ai_test_strategy_generator.artifact_mapping import _is_empty
+        self.assertTrue(_is_empty(""))
+        self.assertTrue(_is_empty("   "))
+        self.assertFalse(_is_empty("value"))
+
+    # -- lines 149-150: _is_empty with list --
+    def test_is_empty_list(self) -> None:
+        from ai_test_strategy_generator.artifact_mapping import _is_empty
+        self.assertTrue(_is_empty([]))
+        self.assertFalse(_is_empty(["item"]))
+
+    def test_is_empty_non_string_non_list(self) -> None:
+        from ai_test_strategy_generator.artifact_mapping import _is_empty
+        # integers, dicts, etc. are not empty
+        self.assertFalse(_is_empty(0))
+        self.assertFalse(_is_empty({}))
+
+    # -- _merge_partial fills in empty-string and None fields --
+    def test_merge_partial_fills_empty_string_field(self) -> None:
+        from ai_test_strategy_generator.artifact_mapping import _merge_partial
+        target: dict = {"delivery_model": ""}
+        _merge_partial(target, {"delivery_model": "Agile"})
+        self.assertEqual(target["delivery_model"], "Agile")
+
+    def test_merge_partial_fills_none_field(self) -> None:
+        from ai_test_strategy_generator.artifact_mapping import _merge_partial
+        target: dict = {"delivery_model": None}
+        _merge_partial(target, {"delivery_model": "Waterfall"})
+        self.assertEqual(target["delivery_model"], "Waterfall")
+
+    def test_merge_partial_fills_empty_list_field(self) -> None:
+        from ai_test_strategy_generator.artifact_mapping import _merge_partial
+        target: dict = {"critical_business_flows": []}
+        _merge_partial(target, {"critical_business_flows": ["claim creation"]})
+        self.assertIn("claim creation", target["critical_business_flows"])
+
+    # -- allow_override=False; same value does not raise --
+    def test_merge_partial_same_value_no_conflict(self) -> None:
+        from ai_test_strategy_generator.artifact_mapping import _merge_partial
+        target: dict = {"delivery_model": "Agile"}
+        _merge_partial(target, {"delivery_model": "Agile"})  # must not raise
+        self.assertEqual(target["delivery_model"], "Agile")
+
+
 if __name__ == "__main__":
     unittest.main()

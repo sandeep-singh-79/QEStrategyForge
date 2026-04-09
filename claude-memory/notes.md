@@ -17,16 +17,57 @@ In-progress analysis, temporary notes, open questions, and working context for t
 - User asked whether a Karpathy-style autoresearch refinement loop can be applied here and whether current binary validations are sufficient.
 
 ## Open Questions
-- Should the first MVP output be markdown, JSON, or both?
-- What amount of deterministic logic should be included in v1 versus later?
-- Should the lightweight output model remain minimal until LLM integration, or grow earlier?
+- Phase 7 direction: real LLM provider first, full CLI generation wiring, or extended artifact types?
+- Should prompt versioning be tracked in the repo (e.g. `prompts/` folder) once real providers are integrated?
+- Should a comparison report (deterministic vs LLM-assisted output side-by-side) be a standalone CLI option?
 
 ## Phase Status Snapshot
 - Phase 1 complete
 - Phase 2 complete
 - Phase 3 complete
 - Phase 4 hardening complete
-- Phase 6 partially started through learning docs
+- Phase 5 complete
+- Phase 6 complete (2026-04-09)
+- Phase 7 complete (2026-04-09)
+
+## Deferred Items Log
+
+### Resolved in Phase 7 (no longer deferred)
+- ~~CLI mode not wired to llm_flow~~ — fixed; cli.py is now the composition root
+- ~~OpenAI-compatible client~~ — implemented (openai_client.py)
+- ~~Gemini client~~ — implemented (gemini_client.py)
+- ~~Ollama/GLM client~~ — implemented (ollama_client.py, tested live with glm-5:cloud)
+- ~~Provider configuration~~ — implemented (config_loader.py + ProviderConfig + strategy.config.yaml)
+- ~~artifact_mapping.py coverage 83%~~ — hardened to 100%
+- ~~artifact_loader.py coverage 91%~~ — hardened to 100%
+- ~~Greenfield artifact benchmark missing~~ — benchmarks/artifact-greenfield/ committed
+
+### Still Deferred — Phase 8 Candidates
+
+**Prompt Engineering**
+- Prompt versioning: prompts built dynamically, no version history or template files.
+- Per-scenario prompt specialization: same template regardless of greenfield/brownfield.
+- Karpathy-style prompt optimization loop: deferred until content-level evaluator exists.
+
+**Benchmark Content Quality (needs live provider)**
+- Scenario-specific content assertions for LLM path: FakeLLMClient returns fixed brownfield content. Real pass/fail for greenfield, incomplete-context, and strong-automation benchmark scenarios requires a live provider generating scenario-aware output.
+- Quality scoring model: fluency, accuracy, coverage scoring not yet attempted.
+
+**Live Provider Tests (beyond Ollama)**
+- OpenAI live integration test: mirrors test_live_ollama.py but for OpenAI API.
+- Gemini live integration test: mirrors test_live_ollama.py but for Gemini API.
+
+**Extended Artifact Support**
+- `.pdf`, `.docx`, `.xlsx`, `.csv` readers not implemented.
+
+**Documentation / Reference**
+- CODEX.md: cross-phase reference glossary for terms, labels, and decision vocabulary. Still deferred.
+
+**Architecture / Platform**
+- Multi-agent orchestration: no autonomous agent loop.
+- Autonomous iterative self-modification: system does not retry or self-improve output.
+- Live external connectors: no Jira, Confluence, or API-source ingestion.
+- Document OCR: no image or scanned PDF parsing.
 
 ## Validation Snapshot
 - Deterministic validation harness defined in `docs/VALIDATION-HARNESS.md`
@@ -47,10 +88,9 @@ In-progress analysis, temporary notes, open questions, and working context for t
 - Additional red/green cycle added negative and edge-case coverage before proceeding
 
 ## Current Working Snapshot
-- Phase 5 hardening is now complete.
-- Latest hardening additions cover:
-  - invalid manifest posture
-  - empty artifact list
-  - directory path references
-- Current full-suite baseline: 69 passed, 0 failed
-- Focused hardening trace output is in `.tracecov-phase5-hardening/`
+- Phase 6 is now complete.
+- All 7 slices delivered: mode contract, prompt builder, LLM client, mocked flow, repair/fallback, benchmark compatibility, hardening.
+- Full test suite: 128 passed, 0 failed.
+- New modules: prompt_builder.py, llm_client.py, llm_flow.py
+- Updated modules: models.py (GENERATION_MODES, validate_mode, LLMConfig), cli.py (--mode flag)
+- New test files: test_generation_mode.py, test_prompt_builder.py, test_llm_client.py, test_llm_flow.py
