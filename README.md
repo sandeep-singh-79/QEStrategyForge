@@ -96,13 +96,27 @@ CLI flags (`--provider`, `--model`, `--base-url`, `--temperature`, `--max-tokens
 
 ## Documentation
 
+### Usage and Reference
 - [Usage Guide](docs/USAGE-GUIDE.md)
-- [Learning Guide](docs/LEARNING-GUIDE.md)
 - [Validation Harness](docs/VALIDATION-HARNESS.md)
 - [Decision Rules](docs/DECISION-RULES.md)
 - [Input Template](docs/V1-INPUT-TEMPLATE.md)
 - [Output Template](docs/V1-OUTPUT-TEMPLATE.md)
 - [Publishing Checklist](docs/PUBLISHING-CHECKLIST.md)
+
+### Learning
+- [Learning Guide](docs/LEARNING-GUIDE.md) — navigator for all learning content
+- [Situations Catalogue](docs/SITUATIONS-CATALOGUE.md) — 12 core + 8 edge case scenarios, full case-study depth
+- [Strategy Anti-Patterns](docs/STRATEGY-ANTI-PATTERNS.md) — 8 named mistakes with diagnosis and remediation
+- [Strategy Frameworks](docs/STRATEGY-FRAMEWORKS.md) — portable mental models and comparison tables
+
+### Testing Type Deep-Dives
+- [Contract Testing](docs/TESTING-TYPE-CONTRACT.md)
+- [Performance Testing](docs/TESTING-TYPE-PERFORMANCE.md)
+- [Security Testing in the Pipeline](docs/TESTING-TYPE-SECURITY.md)
+- [Exploratory Testing](docs/TESTING-TYPE-EXPLORATORY.md)
+- [Accessibility Testing](docs/TESTING-TYPE-ACCESSIBILITY.md)
+- [Chaos and Resilience Testing](docs/TESTING-TYPE-CHAOS.md)
 
 ## Development Status
 

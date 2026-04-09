@@ -65,73 +65,52 @@ Start with five questions:
 
 ## How Strategy Changes By Situation
 
-### Situation 1 - Tight Timeline
+This guide summarises the core patterns. Full case studies — including setup, risk profile, strategy decisions, tradeoffs, what good looks like, and common mistakes — are in the [Situations Catalogue](SITUATIONS-CATALOGUE.md).
 
-Strategy pattern:
-- prioritize smoke, critical-path, and release-risk coverage
-- defer nice-to-have automation
-- increase clarity on tradeoffs
+### Core Situations
 
-Learning:
-- strategy is often about what not to do yet
+| Situation | Key Pattern | Full Case Study |
+|---|---|---|
+| Tight Timeline | Prioritise critical path; make tradeoffs explicit | [Situation 1](SITUATIONS-CATALOGUE.md#situation-1--tight-timeline) |
+| Legacy System | Protect before you modernise; stabilise before you scale | [Situation 2](SITUATIONS-CATALOGUE.md#situation-2--legacy-system) |
+| Greenfield Product | Build from the bottom up; embed CI/CD gates from day one | [Situation 3](SITUATIONS-CATALOGUE.md#situation-3--greenfield-product) |
+| Brownfield Product | Audit before you build; retire before you scale | [Situation 4](SITUATIONS-CATALOGUE.md#situation-4--brownfield-product) |
+| High-Regulation Domain | Compliance is a tested capability, not a sign-off | [Situation 5](SITUATIONS-CATALOGUE.md#situation-5--high-regulation-domain) |
+| Microservices / Distributed | Contract testing is load-bearing; E2E sparingly | [Situation 6](SITUATIONS-CATALOGUE.md#situation-6--microservices--distributed-system) |
+| High-Frequency Release | Pipeline speed and reliability over breadth | [Situation 7](SITUATIONS-CATALOGUE.md#situation-7--high-frequency-release-cadence-cicd-native) |
+| Mobile-First / Cross-Platform | Deliberate device matrix; layer below the UI | [Situation 8](SITUATIONS-CATALOGUE.md#situation-8--mobile-first-or-cross-platform-product) |
+| Data-Heavy / ML Pipeline | Assert on output data, not just execution | [Situation 9](SITUATIONS-CATALOGUE.md#situation-9--data-heavy-system-analytics--data-platform--ml-pipeline) |
+| Third-Party Integration Heavy | Test your boundary; stub the vendor | [Situation 10](SITUATIONS-CATALOGUE.md#situation-10--third-party-integration-heavy) |
+| Security-First Domain | Security is a pipeline layer, not a pen-test-once | [Situation 11](SITUATIONS-CATALOGUE.md#situation-11--security-first-domain-fintech-healthtech-deftech) |
+| Performance-Critical System | Define SLAs before testing; all five types, not just load | [Situation 12](SITUATIONS-CATALOGUE.md#situation-12--performance-critical-system-trading-real-time-high-volume) |
 
-### Situation 2 - Legacy System
+### Edge Cases
 
-Strategy pattern:
-- protect current business-critical behavior first
-- favor API and service-layer coverage where possible
-- reduce dependence on brittle E2E suites
+Real engagements rarely match a single archetype. The [Situations Catalogue](SITUATIONS-CATALOGUE.md#edge-case-scenarios) covers the most common mismatches:
 
-Learning:
-- modernization strategy is part of test strategy
+| Edge Case | Core Tension |
+|---|---|
+| Greenfield System, Brownfield Organisation | You cannot greenfield the org; design for the current maturity |
+| Strong Automation, Wrong Layer | Rebalance the pyramid; don't just add more |
+| Compliance-Heavy Domain, Startup Speed | Automate the traceability, not just the tests |
+| Mature Automation, No Observability | A green pipeline is not a production quality guarantee |
+| High Team Turnover / Knowledge Fragility | Maintainability is a quality attribute of the test suite |
+| Multiple Parallel Streams | Define the target state before consolidating anything |
+| UI Legacy + API Modernisation In Flight | Define layer ownership before both teams start building |
+| Incomplete or Contradictory Requirements | Automate only what is stable and agreed |
 
-### Situation 2A - Greenfield Product
+## Testing Type Deep-Dives
 
-Strategy pattern:
-- build quality controls early
-- shift confidence left into unit, component, API, and contract layers
-- embed quality gates directly into CI/CD
+These are separate documents covering specific testing types in full depth — what they are, when they are necessary, how to implement them, and common mistakes.
 
-Learning:
-- greenfield strategy is about building the right quality foundations early
-
-### Situation 2B - Brownfield Product
-
-Strategy pattern:
-- protect existing business-critical behavior first
-- assess what existing automation should be reused, stabilized, retired, or replaced
-- modernize in phases without losing regression confidence
-
-Learning:
-- brownfield strategy is about controlled transition, not clean-slate theory
-
-### Situation 3 - High-Regulation Domain
-
-Strategy pattern:
-- strengthen traceability, audit, data control, and approvals
-- be careful about AI-generated recommendations without review
-
-Learning:
-- governance is part of quality, not overhead
-
-### Situation 4 - Strong Automation, Weak Reporting
-
-Strategy pattern:
-- improve quality telemetry, release readiness, and risk reporting
-- optimize what exists before adding more scripts
-
-Learning:
-- more automation is not always the next answer
-
-### Situation 5 - Incomplete Information
-
-Strategy pattern:
-- produce a conditional strategy
-- label assumptions clearly
-- separate knowns from unknowns
-
-Learning:
-- honesty and structure beat fake completeness
+| Document | What It Covers |
+|---|---|
+| [Contract Testing](TESTING-TYPE-CONTRACT.md) | Consumer-driven vs. provider schema; where it fits vs. integration testing; what it catches; pipeline placement |
+| [Performance Testing](TESTING-TYPE-PERFORMANCE.md) | Load, stress, spike, soak, and scalability — differentiated; SLA definition; pipeline integration |
+| [Security Testing in the Pipeline](TESTING-TYPE-SECURITY.md) | SAST, SCA, DAST, pen testing — four layers; security functional tests; the security testing matrix |
+| [Exploratory Testing](TESTING-TYPE-EXPLORATORY.md) | Session-based testing; charters; debriefs; when exploratory testing carries the most weight |
+| [Accessibility Testing](TESTING-TYPE-ACCESSIBILITY.md) | WCAG; automated scanning, keyboard testing, screen reader testing; pipeline integration; legal risk |
+| [Chaos and Resilience Testing](TESTING-TYPE-CHAOS.md) | Fault types; experiment structure; prerequisites; game days; chaos in CI/CD vs. production |
 
 ## How To Think About Automation Strategy
 
@@ -153,33 +132,37 @@ Another simple rule:
 - automation is not complete when scripts exist
 - it becomes strategically useful when it is reliable, maintainable, visible in reporting, and integrated into CI/CD and quality gates
 
-## Shift-Left And Layered Thinking
+## Strategy Anti-Patterns
 
-Shift-left means:
-- detect and prevent problems earlier
-- move quality activity closer to requirements, design, and development
+Recognising named mistakes is the first step to avoiding them. These are collected in a separate document with full description of each pattern, why teams fall into it, the actual harm, and what to do instead.
 
-Examples:
-- improve requirement clarity
-- define acceptance criteria early
-- use unit and API checks before pushing too much into UI regression
-- introduce contract checks early for integrated systems
+| Anti-Pattern | Signal |
+|---|---|
+| [Coverage Number Trap](STRATEGY-ANTI-PATTERNS.md#the-coverage-number-trap) | Stakeholders ask "how many tests?" |
+| [Automation First Fallacy](STRATEGY-ANTI-PATTERNS.md#the-automation-first-fallacy) | High maintenance burden on new-feature automation |
+| [UI Pyramid Inversion](STRATEGY-ANTI-PATTERNS.md#the-ui-pyramid-inversion) | Slow, flaky suite; low unit coverage |
+| [Siloed QA Team](STRATEGY-ANTI-PATTERNS.md#the-siloed-qa-team) | Defects found late; engineers don't own tests |
+| [Deferred Compliance](STRATEGY-ANTI-PATTERNS.md#the-deferred-compliance) | Bulk compliance effort pre-launch |
+| [Tool-First Strategy](STRATEGY-ANTI-PATTERNS.md#the-tool-first-strategy) | Testing shaped by tool's strengths, not risk profile |
+| [Fake Green](STRATEGY-ANTI-PATTERNS.md#the-fake-green) | Green pipeline; production incidents from untested scenarios |
+| [Never-Retire Rule](STRATEGY-ANTI-PATTERNS.md#the-never-retire-rule) | Suite grows indefinitely; run time increases |
 
-Layered strategy means:
-- not all confidence should come from one layer
-- earlier layers should carry more routine confidence when possible
-- UI / E2E should focus on business-critical flows and cross-layer validation
+See [Strategy Anti-Patterns](STRATEGY-ANTI-PATTERNS.md) for full case studies.
 
-## How Strategy Changes If Automation Already Exists
+## Strategy Thinking Frameworks
 
-If automation does not exist:
-- build foundations and sequence adoption realistically
+Portable mental models for making better strategy decisions — during formation, during reviews, and when pushing back on a quality approach.
 
-If automation exists but is weak:
-- stabilize and simplify before scaling
+| Framework | Core Question |
+|---|---|
+| [Risk-First Filter](STRATEGY-FRAMEWORKS.md#the-risk-first-filter) | What risk does this test protect against? |
+| [Automation Viability Check](STRATEGY-FRAMEWORKS.md#the-automation-viability-check) | Is this scenario worth automating right now? |
+| [Layer Before Climbing](STRATEGY-FRAMEWORKS.md#the-layer-before-climbing) | Could a lower layer give the same confidence more cheaply? |
+| [Release Decision Check](STRATEGY-FRAMEWORKS.md#the-release-decision-check) | What questions does the test report actually answer? |
+| [Shift-Left / Shift-Right Balance Check](STRATEGY-FRAMEWORKS.md#the-shift-left--shift-right-balance-check) | Is the strategy balanced across the delivery cycle? |
+| [Assumption Visibility Rule](STRATEGY-FRAMEWORKS.md#the-assumption-visibility-rule) | What is this strategy assuming, and is it visible? |
 
-If automation is mature:
-- focus more on optimization, governance, reporting, and release decision quality
+See [Strategy Frameworks](STRATEGY-FRAMEWORKS.md) for full treatment including comparison tables.
 
 ## How To Think About AI In Strategy
 
@@ -219,19 +202,19 @@ A key design rule: provider configuration is resolved in four layers (defaults �
 
 ## Learning Exercises For This Repo
 
-1. Compare strategy for:
+1. Compare strategy for two system types — use the [Situations Catalogue](SITUATIONS-CATALOGUE.md):
 - an API-first insurance platform
 - a legacy UI-heavy internal app
 
-2. Compare strategy for:
+2. Compare strategy for two automation maturity states — use the [Frameworks comparison table](STRATEGY-FRAMEWORKS.md#no-automation-vs-weak-automation-vs-mature-automation):
 - high test automation maturity
 - low test automation maturity
 
-3. Compare strategy for:
+3. Compare strategy for two information states — use [Edge Case H](SITUATIONS-CATALOGUE.md#edge-case-h--incomplete-or-contradictory-requirements) and [Situation 3](SITUATIONS-CATALOGUE.md#situation-3--greenfield-product):
 - complete input context
 - incomplete input context
 
-4. Compare AI posture for:
+4. Compare AI posture for — use [Situation 5](SITUATIONS-CATALOGUE.md#situation-5--high-regulation-domain) and [Situation 7](SITUATIONS-CATALOGUE.md#situation-7--high-frequency-release-cadence-cicd-native):
 - AI-friendly organization
 - low-trust, compliance-heavy organization
 
@@ -239,6 +222,7 @@ A key design rule: provider configuration is resolved in four layers (defaults �
 - the brownfield-partial-automation benchmark
 - the greenfield-low-automation benchmark
 - observe what the LLM adds vs what the deterministic renderer always produces
+- use the [Deterministic vs LLM-Assisted comparison table](STRATEGY-FRAMEWORKS.md#deterministic-vs-llm-assisted-strategy-generation-this-repo)
 
 6. Inspect what happens when the LLM is unreachable:
 - set `--provider ollama --model does-not-exist`
@@ -249,6 +233,16 @@ A key design rule: provider configuration is resolved in four layers (defaults �
 - use `benchmarks/artifact-brownfield/` as input
 - compare the output to the equivalent YAML input path
 - read the manifest and understand how document types map to input fields
+
+8. Apply the [Anti-Patterns](STRATEGY-ANTI-PATTERNS.md) as a diagnostic tool:
+- read the quick reference table
+- for a team or project you know, identify which anti-patterns are present
+- for each one, use the "what to do instead" section to draft an improvement action
+
+9. Design a test strategy for [Edge Case A — Greenfield System, Brownfield Organisation](SITUATIONS-CATALOGUE.md#edge-case-a--greenfield-system-brownfield-organisation):
+- use the [Automation Viability Check](STRATEGY-FRAMEWORKS.md#the-automation-viability-check) to decide what to automate first
+- use the [Assumption Visibility Rule](STRATEGY-FRAMEWORKS.md#the-assumption-visibility-rule) to document what the strategy depends on
+- use the [Shift-Left / Shift-Right Balance Check](STRATEGY-FRAMEWORKS.md#the-shift-left--shift-right-balance-check) to design the quality gate model
 
 ## Expected Learning Outcome
 
