@@ -31,7 +31,7 @@ Current benchmark examples:
 - `benchmarks/strong-automation-weak-governance.input.yaml`
 
 The full input contract is documented in:
-- [V1-INPUT-TEMPLATE.md](C:/Data/IdeaProjects/Agentic%20Upskilling/ai-test-strategy-generator/docs/V1-INPUT-TEMPLATE.md)
+- [V1-INPUT-TEMPLATE.md](V1-INPUT-TEMPLATE.md)
 
 ## Run Validation Only
 
@@ -88,8 +88,8 @@ There are three deterministic validation layers:
 - posture-specific checks
 
 The benchmark and output rules are documented in:
-- [VALIDATION-HARNESS.md](C:/Data/IdeaProjects/Agentic%20Upskilling/ai-test-strategy-generator/docs/VALIDATION-HARNESS.md)
-- [V1-OUTPUT-TEMPLATE.md](C:/Data/IdeaProjects/Agentic%20Upskilling/ai-test-strategy-generator/docs/V1-OUTPUT-TEMPLATE.md)
+- [VALIDATION-HARNESS.md](VALIDATION-HARNESS.md)
+- [V1-OUTPUT-TEMPLATE.md](V1-OUTPUT-TEMPLATE.md)
 
 ## Output Contract
 
@@ -128,10 +128,11 @@ After Phase 4, the most reasonable next steps are:
 3. Add bounded LLM-assisted synthesis behind the deterministic evaluator
 4. Preserve benchmark-driven validation as the acceptance gate
 
-## Repo Memory And Planning
+## Development Workflow Files
 
-Use these files to recover context in future sessions:
-- [../plan.md](C:/Data/IdeaProjects/Agentic%20Upskilling/ai-test-strategy-generator/plan.md)
-- [../claude-memory/memory.md](C:/Data/IdeaProjects/Agentic%20Upskilling/ai-test-strategy-generator/claude-memory/memory.md)
-- [../claude-memory/insights.md](C:/Data/IdeaProjects/Agentic%20Upskilling/ai-test-strategy-generator/claude-memory/insights.md)
-- [../claude-memory/notes.md](C:/Data/IdeaProjects/Agentic%20Upskilling/ai-test-strategy-generator/claude-memory/notes.md)
+This repo also contains development workflow files for local iterative work:
+- `plan.md`
+- `claude-memory/`
+- `AGENTS.md`
+
+They are not required for running the deterministic MVP, but they are useful for continuing the project across sessions.

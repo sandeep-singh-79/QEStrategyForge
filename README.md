@@ -10,7 +10,7 @@ It currently focuses on:
 - structural validation
 - benchmark-based pass/fail evaluation
 
-This repo is part of the broader upskilling program in [`Agentic Upskilling`](C:/Data/IdeaProjects/Agentic%20Upskilling), but it has its own repo-local plan and memory layer.
+The current implementation is intentionally pre-LLM. It focuses on making strategy logic explicit, testable, and benchmarkable before adding broader ingestion or synthesis layers.
 
 ## Current Status
 
@@ -30,7 +30,7 @@ Completed slices:
 - 4.11 phase 4 hardening
 
 Current baseline:
-- 46 tests passed
+- 48 tests passed
 - 0 failed
 - 4 benchmark scenarios pass end-to-end
 
@@ -45,9 +45,9 @@ Current baseline:
 - `docs/`
   Planning, rules, learning, and usage documentation.
 - `claude-memory/`
-  Durable repo memory for future sessions.
+  Development memory files used for iterative local work.
 - `plan.md`
-  Active session/cycle execution tracker.
+  Development execution tracker.
 
 ## First-Time Usage
 
@@ -67,8 +67,25 @@ python -m unittest discover -s tests -v
 
 ## Where To Look Next
 
-- [docs/PHASE-4-IMPLEMENTATION-BACKLOG.md](C:/Data/IdeaProjects/Agentic%20Upskilling/ai-test-strategy-generator/docs/PHASE-4-IMPLEMENTATION-BACKLOG.md)
-- [docs/VALIDATION-HARNESS.md](C:/Data/IdeaProjects/Agentic%20Upskilling/ai-test-strategy-generator/docs/VALIDATION-HARNESS.md)
-- [docs/DECISION-RULES.md](C:/Data/IdeaProjects/Agentic%20Upskilling/ai-test-strategy-generator/docs/DECISION-RULES.md)
-- [docs/USAGE-GUIDE.md](C:/Data/IdeaProjects/Agentic%20Upskilling/ai-test-strategy-generator/docs/USAGE-GUIDE.md)
-- [claude-memory/memory.md](C:/Data/IdeaProjects/Agentic%20Upskilling/ai-test-strategy-generator/claude-memory/memory.md)
+- [Usage Guide](docs/USAGE-GUIDE.md)
+- [Validation Harness](docs/VALIDATION-HARNESS.md)
+- [Decision Rules](docs/DECISION-RULES.md)
+- [Phase 4 Backlog](docs/PHASE-4-IMPLEMENTATION-BACKLOG.md)
+- [Publishing Checklist](docs/PUBLISHING-CHECKLIST.md)
+
+## Publishing Notes
+
+Before publishing publicly:
+- the repo uses the GNU Affero General Public License in [LICENSE](LICENSE)
+- `claude-memory/`, `plan.md`, and `AGENTS.md` are intentionally kept public as part of the development workflow
+- review benchmark and documentation content one more time for anything internal or proprietary
+
+## License
+
+This repository is licensed under the GNU Affero General Public License v3.0 or later.
+
+- personal and commercial use are allowed under AGPL
+- if modified versions are conveyed, they must remain under AGPL
+- if a modified version is used for remote network interaction, AGPL requires the corresponding source to be made available to those users
+
+See [LICENSE](LICENSE).

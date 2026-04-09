@@ -42,6 +42,9 @@ Current state, decisions, and active priorities for the `ai-test-strategy-genera
 - A Karpathy-style iterative improvement loop can be useful here, but only in a constrained form after stronger binary evaluation is in place for strategy outputs.
 - Code should follow KISS and reuse-first principles; avoid unnecessary abstraction or new modules unless the current slice truly needs them.
 - Refactor as complexity grows, and do not mark code complete until it is tested with reported pass/fail and coverage details.
+- The repository will keep `claude-memory/`, `plan.md`, and `AGENTS.md` public as part of the visible development workflow.
+- The repository will use AGPL-3.0-or-later.
+- AGPL is the closest fit to the desired reciprocity behavior, but it does not require upstream pull requests back to this specific repository.
 
 ## Active Next Work
 - Keep MVP ingestion constrained to structured input plus small artifact-folder support.
@@ -74,3 +77,9 @@ Current state, decisions, and active priorities for the `ai-test-strategy-genera
 - Negative and edge-case tests are included for current code paths.
 - Four benchmark scenarios now pass deterministically end-to-end.
 - Root README and detailed usage guide now exist for first-time execution and recovery.
+- Public-publishing prep is in place:
+  - README links are GitHub-friendly
+  - benchmark scenarios are labeled synthetic
+  - `pyproject.toml` now declares `README.md`
+  - publishing checklist exists in `docs/PUBLISHING-CHECKLIST.md`
+  - AGPL license notice exists in `LICENSE`

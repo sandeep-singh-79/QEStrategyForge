@@ -36,6 +36,7 @@ In-progress analysis, temporary notes, open questions, and working context for t
 - Detailed Phase 4 backlog created in `docs/PHASE-4-IMPLEMENTATION-BACKLOG.md`
 - Phase 4 slices are now complete, including the optional lightweight output model plus README and usage guide
 - Immediate planning focus should move to the next post-Phase-4 milestone
+- Public publishing prep now includes AGPL and the explicit decision to keep development workflow files public
 
 ## Testing Rule Snapshot
 - Before further feature work, existing code must receive automated tests
