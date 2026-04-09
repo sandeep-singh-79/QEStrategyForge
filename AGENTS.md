@@ -25,12 +25,17 @@ Read these files before proceeding.
 - Use the top-level `Agentic Upskilling` memory layer for cross-program strategy and portfolio decisions.
 - Update memory continuously during the session, not only at the end.
 - Follow KISS: keep code simple and direct.
+- Follow DRY: remove duplication when it becomes real and recurring.
+- Follow YAGNI: do not build speculative flexibility ahead of current validated need.
+- Follow SOLID where it helps clarity, testability, and change safety; do not force abstraction for its own sake.
 - Prefer reuse and extension of existing code before introducing new modules or abstractions.
 - Write new code only when it is genuinely required by the current slice or validation need.
 - Refactor when complexity starts increasing or duplication becomes visible.
+- Introduce design patterns only when the code has become complex enough that a named pattern materially improves structure.
 - All code must be tested before it is marked complete.
 - Always report test pass/fail results and coverage details for code that was tested.
 - Follow TDD in the standard order: red, green, refactor.
+- For Phase 5 and later, every ingestion path must have deterministic validation and deterministic tests before it is considered complete.
 
 ## Memory Update Discipline
 
@@ -63,6 +68,7 @@ Use binary pass/fail validation for capability work.
   - expected behavior is stated before implementation
   - at least one pass/fail check exists
   - result is recorded in `claude-memory/notes.md` or `claude-memory/memory.md`
+  - automated tests exist for normal, negative, and edge-case behavior where applicable
 
 - Context recovery passes only if:
   - `AGENTS.md`, `claude-memory/`, and `plan.md` were reloaded

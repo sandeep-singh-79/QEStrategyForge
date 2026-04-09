@@ -35,7 +35,7 @@ In-progress analysis, temporary notes, open questions, and working context for t
 ## Backlog Snapshot
 - Detailed Phase 4 backlog created in `docs/PHASE-4-IMPLEMENTATION-BACKLOG.md`
 - Phase 4 slices are now complete, including the optional lightweight output model plus README and usage guide
-- Immediate planning focus should move to the next post-Phase-4 milestone
+- Immediate planning focus should move to the next post-Phase-5 milestone
 - Public publishing prep now includes AGPL and the explicit decision to keep development workflow files public
 
 ## Testing Rule Snapshot
@@ -45,3 +45,12 @@ In-progress analysis, temporary notes, open questions, and working context for t
 - Green achieved after moving tests to repo-local temp files
 - Refactor kept the fix simple and removed brittle cleanup logic
 - Additional red/green cycle added negative and edge-case coverage before proceeding
+
+## Current Working Snapshot
+- Phase 5 hardening is now complete.
+- Latest hardening additions cover:
+  - invalid manifest posture
+  - empty artifact list
+  - directory path references
+- Current full-suite baseline: 69 passed, 0 failed
+- Focused hardening trace output is in `.tracecov-phase5-hardening/`

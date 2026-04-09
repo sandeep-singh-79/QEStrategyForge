@@ -48,9 +48,11 @@ Current state, decisions, and active priorities for the `ai-test-strategy-genera
 
 ## Active Next Work
 - Keep MVP ingestion constrained to structured input plus small artifact-folder support.
-- Decide the next post-Phase-4 milestone.
-- Decide whether artifact-folder ingestion should come before LLM integration.
+- Decide the next post-Phase-5 milestone.
 - Decide how bounded LLM synthesis should fit on top of the deterministic core.
+- Decide whether the next step is LLM integration or a second artifact benchmark.
+- Enforce deterministic tests and validations for every future slice.
+- Follow TDD plus KISS, DRY, YAGNI, SOLID, and reuse-first implementation rules during future phases.
 
 ## Blockers
 - No setup blocker.
@@ -83,3 +85,46 @@ Current state, decisions, and active priorities for the `ai-test-strategy-genera
   - `pyproject.toml` now declares `README.md`
   - publishing checklist exists in `docs/PUBLISHING-CHECKLIST.md`
   - AGPL license notice exists in `LICENSE`
+- Phase 5 implementation planning now exists in `docs/PHASE-5-IMPLEMENTATION-PLAN.md`.
+- Phase 5 slices 5.1 to 5.3 are complete:
+  - artifact folder contract
+  - artifact loader
+  - supported file readers
+- Phase 5 slices 5.4 to 5.5 are complete:
+  - artifact mappers
+  - merge and normalization
+- Phase 5 slices 5.6 to 5.7 are complete:
+  - end-to-end artifact flow
+  - committed artifact benchmark
+- Phase 5 slice 5.8 is complete:
+  - invalid manifest posture now fails early
+  - empty artifact lists now fail early
+  - directory references now fail as invalid artifact paths
+  - path traversal remains blocked
+  - incomplete artifact sets fail through the reused validation path
+- Planned Phase 5 MVP file-type support:
+  - `.md`
+  - `.yaml`
+  - `.yml`
+  - `.json`
+- Explicitly deferred from Phase 5:
+  - `.pdf`
+  - `.docx`
+  - `.xlsx`
+  - `.csv`
+  - images
+  - live external connectors
+- Phase 5 test baseline:
+  - `tests.test_artifact_loader`: 12 passed, 0 failed
+  - `tests.test_artifact_mapping`: 4 passed, 0 failed
+  - `tests.test_artifact_end_to_end_flow`: 3 passed, 0 failed
+  - full suite: 69 passed, 0 failed
+- Phase 5 coverage evidence:
+  - `.tracecov-phase5-hardening/ai_test_strategy_generator.artifact_end_to_end_flow.cover`
+    - 33 lines, 93% coverage
+  - `.tracecov-phase5-hardening/ai_test_strategy_generator.artifact_loader.cover`
+    - 112 lines, 91% coverage
+  - `.tracecov-phase5-hardening/ai_test_strategy_generator.artifact_mapping.cover`
+    - 118 lines, 83% coverage
+  - `.tracecov-phase5-hardening/ai_test_strategy_generator.end_to_end_flow.cover`
+    - 55 lines, 87% coverage
