@@ -7,3 +7,7 @@ outputs/
 __pycache__/
 *.pyc
 *.cover
+
+# Per-phase development plan and backlog files (internal dev artifacts)
+docs/PHASE-*-IMPLEMENTATION-PLAN.md
+docs/PHASE-*-IMPLEMENTATION-BACKLOG.md
