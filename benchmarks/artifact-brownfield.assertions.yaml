@@ -1,0 +1,24 @@
+must_include_headings:
+  - "## Executive Summary"
+  - "## Engagement Context"
+  - "## Lifecycle Posture"
+  - "## Layered Test Strategy"
+  - "## Automation Strategy"
+  - "## CI/CD And Quality Gates"
+  - "## AI Usage Model"
+  - "## Assumptions, Gaps, And Open Questions"
+
+must_include_labels:
+  - "Project Posture: brownfield"
+  - "Current Automation State: partial"
+  - "Current CI/CD Maturity: partial"
+  - "AI Adoption Posture: cautious"
+
+must_include_substrings:
+  - "Brownfield Transition Strategy:"
+  - "Automation Adoption Path:"
+  - "Missing Information:"
+
+must_not_include_substrings:
+  - "Project Posture: greenfield"
+  - "Current Automation State: none"

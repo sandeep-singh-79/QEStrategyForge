@@ -11,9 +11,9 @@
 | Field | Value |
 |---|---|
 | Capability | ai-test-strategy-generator |
-| Objective | Close Phase 4 completely and leave the repo ready for the next expansion stage |
-| Current Phase | Phase 4 Complete |
-| Current Focus | Phase 4 closeout complete; next focus moves beyond deterministic MVP |
+| Objective | Complete Phase 5 artifact-folder hardening and prepare the next milestone |
+| Current Phase | Phase 5 Implementation |
+| Current Focus | Phase 5 hardened artifact-folder MVP baseline |
 
 ---
 
@@ -45,15 +45,22 @@
 | T22 - Output Model | Add lightweight structured output model | Complete | `StrategyDocument` and `StrategySection` now structure renderer output |
 | T23 - README | Add first-time usage documentation | Complete | Root README added |
 | T24 - Usage Guide | Add detailed execution guide | Complete | `docs/USAGE-GUIDE.md` added |
+| T25 - Phase 5 Plan | Define the artifact-folder MVP implementation plan | Complete | `docs/PHASE-5-IMPLEMENTATION-PLAN.md` added |
+| T26 - Phase 5 Backlog | Create detailed execution backlog for artifact-folder MVP | Complete | `docs/PHASE-5-IMPLEMENTATION-BACKLOG.md` added |
+| T27 - Artifact Contract And Loader | Implement Slice 5.1 to 5.3 with tests | Complete | Manifest contract, folder loader, and `.md/.yaml/.json` readers added |
+| T28 - Artifact Mapping And Merge | Implement Slice 5.4 to 5.5 with tests | Complete | Artifact mapping and normalized merge logic added |
+| T29 - Artifact End-To-End Flow | Implement Slice 5.6 to 5.7 with tests | Complete | Artifact-folder path now reuses the main strategy pipeline and committed benchmark assets exist |
+| T30 - Phase 5 Hardening | Close deterministic artifact-folder edge cases | Complete | Empty manifests, invalid posture, directory paths, path traversal, and incomplete artifact sets now fail predictably |
 
 ---
 
 ## Immediate Next Actions
 
-1. Decide the next post-Phase-4 milestone
+1. Decide whether Phase 6 should be LLM integration or a second artifact benchmark
 2. Keep deterministic benchmark validation as the acceptance gate for future changes
-3. Decide whether to add artifact-folder ingestion before LLM integration
-4. Decide how bounded LLM synthesis should fit on top of the deterministic core
+3. Reuse the existing Phase 4 and Phase 5 pipeline rather than building a second path
+4. Keep current file-type support limited to `.md`, `.yaml/.yml`, and `.json` until a new phase expands it
+5. Follow TDD and deterministic validation for every future slice
 
 ---
 
@@ -72,6 +79,11 @@
 - Code implementation should follow KISS and reuse-first principles.
 - Code should be tested before a slice is marked complete, with pass/fail and coverage details recorded.
 - Current tested baseline: 48 tests passed, 0 failed.
+- Current tested baseline after starting Phase 5: 56 tests passed, 0 failed.
 - Phase 4 hardening is now complete.
 - Gate E is satisfied because 4 benchmark scenarios now pass deterministically end-to-end.
 - Final Phase 4 trace coverage in `.tracecov-phase4-final/` shows 0 missing traced lines for current production modules, including `main.py`, `models.py`, and `renderer.py`.
+- Phase 5 mapping baseline is now green: 60 tests passed, 0 failed.
+- Phase 5 artifact-flow baseline is now green: 63 tests passed, 0 failed.
+- Phase 5 hardening baseline is now green: 69 tests passed, 0 failed.
+- Phase 5 hardening trace coverage is recorded in `.tracecov-phase5-hardening/`.

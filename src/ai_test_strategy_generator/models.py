@@ -19,6 +19,37 @@ class ValidationResult:
 
 
 @dataclass(slots=True)
+class ArtifactReference:
+    artifact_type: str
+    path: Path
+
+
+@dataclass(slots=True)
+class ArtifactManifest:
+    source_path: Path
+    engagement_name: str
+    domain: str
+    project_posture: str
+    artifacts: list[ArtifactReference] = field(default_factory=list)
+    overrides: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(slots=True)
+class ArtifactDocument:
+    artifact_type: str
+    path: Path
+    format: str
+    content: Any
+
+
+@dataclass(slots=True)
+class ArtifactBundle:
+    root_path: Path
+    manifest: ArtifactManifest
+    documents: list[ArtifactDocument] = field(default_factory=list)
+
+
+@dataclass(slots=True)
 class StrategySection:
     heading: str
     lines: list[str] = field(default_factory=list)

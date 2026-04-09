@@ -6,6 +6,7 @@ from typing import Any
 from ai_test_strategy_generator.benchmark_runner import run_assertions
 from ai_test_strategy_generator.context_classifier import classify_context
 from ai_test_strategy_generator.input_loader import InputLoadError, load_input
+from ai_test_strategy_generator.models import InputPackage
 from ai_test_strategy_generator.output_validator import validate_output
 from ai_test_strategy_generator.renderer import render_strategy
 from ai_test_strategy_generator.rule_engine import apply_rules
@@ -22,6 +23,14 @@ def run_benchmark_flow(
     except InputLoadError as exc:
         return _result(False, 1, [str(exc)], [], output_path)
 
+    return run_input_package_flow(input_package, assertions_path, output_path)
+
+
+def run_input_package_flow(
+    input_package: InputPackage,
+    assertions_path: str | Path,
+    output_path: str | Path,
+) -> dict[str, Any]:
     input_validation = validate_input(input_package)
     if not input_validation.is_valid:
         return _result(False, 2, input_validation.errors, [], output_path)

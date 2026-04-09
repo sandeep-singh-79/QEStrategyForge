@@ -97,3 +97,19 @@ Reusable patterns, lessons learned, and decision rules for the `ai-test-strategy
 24. First-time usage documentation is part of product readiness, not polish.
 - Once the deterministic core was stable, README and usage guidance became necessary to make the repo independently usable.
 - This is especially important for long-running upskilling repos where future sessions must recover quickly.
+
+25. Deterministic ingestion work needs the same engineering discipline as generation work.
+- Artifact-folder support should not weaken the pass/fail model established in Phase 4.
+- New ingestion paths need normal, negative, and edge-case tests before they can be trusted.
+
+26. Reuse is the default architecture for the next phase.
+- Phase 5 should reuse the existing normalization and strategy pipeline rather than introduce a second path.
+- DRY, YAGNI, and SOLID should guide refactoring, but only when real complexity appears.
+
+27. Hardening should reject obviously invalid artifact manifests as early as possible.
+- Invalid posture values, empty artifact lists, and directory references are loader problems, not later mapping or validation problems.
+- Failing them early keeps errors clearer and reduces downstream ambiguity.
+
+28. Not all useful coverage runs need to be full-suite runs.
+- The full suite is the release gate, but focused trace runs on the changed slice are enough to prove hardening coverage for that slice.
+- This keeps the feedback loop tighter while still preserving measurable evidence.

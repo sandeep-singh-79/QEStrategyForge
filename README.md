@@ -12,28 +12,6 @@ It currently focuses on:
 
 The current implementation is intentionally pre-LLM. It focuses on making strategy logic explicit, testable, and benchmarkable before adding broader ingestion or synthesis layers.
 
-## Current Status
-
-Phase 4 implementation is complete for the deterministic MVP path.
-
-Completed slices:
-- 4.1 runtime foundation
-- 4.2 input loading
-- 4.3 input validation
-- 4.4 context classification
-- 4.5 decision rule engine
-- 4.6 lightweight output model
-- 4.7 deterministic renderer
-- 4.8 structural output validator
-- 4.9 benchmark assertion runner
-- 4.10 end-to-end first flow
-- 4.11 phase 4 hardening
-
-Current baseline:
-- 48 tests passed
-- 0 failed
-- 4 benchmark scenarios pass end-to-end
-
 ## Repo Layout
 
 - `src/ai_test_strategy_generator/`
