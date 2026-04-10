@@ -11,3 +11,7 @@ __pycache__/
 # Per-phase development plan and backlog files (internal dev artifacts)
 docs/PHASE-*-IMPLEMENTATION-PLAN.md
 docs/PHASE-*-IMPLEMENTATION-BACKLOG.md
+
+# Temp/junk files
+tmp_*.md
+.coverage
