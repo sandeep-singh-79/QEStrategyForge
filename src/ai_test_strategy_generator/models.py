@@ -2,9 +2,45 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
 
 GENERATION_MODES: frozenset[str] = frozenset({"deterministic", "llm_assisted"})
+
+# Exit codes used by all benchmark flow functions.
+EXIT_SUCCESS = 0       # All assertions passed.
+EXIT_LOAD_ERROR = 1    # Input file / artifact folder could not be loaded.
+EXIT_INPUT_INVALID = 2 # Input failed schema validation.
+EXIT_OUTPUT_INVALID = 3 # Generated output is structurally invalid after all fallbacks.
+EXIT_ASSERTIONS_FAILED = 4 # Output is valid but one or more benchmark assertions failed.
+
+
+class FlowResult(TypedDict):
+    """Structured return type for all benchmark flow functions."""
+    success: bool
+    exit_code: int          # One of the EXIT_* constants above.
+    validation_errors: list[str]
+    assertion_errors: list[str]
+    output_path: str
+    repair_stats: dict[str, object]  # Populated by LLM flow; empty dict for deterministic flow.
+
+
+def make_flow_result(
+    success: bool,
+    exit_code: int,
+    validation_errors: list[str],
+    assertion_errors: list[str],
+    output_path: str | Path,
+    repair_stats: dict[str, object] | None = None,
+) -> FlowResult:
+    """Construct a FlowResult dict from the given parameters."""
+    return FlowResult(
+        success=success,
+        exit_code=exit_code,
+        validation_errors=validation_errors,
+        assertion_errors=assertion_errors,
+        output_path=str(output_path),
+        repair_stats=repair_stats if repair_stats is not None else {},
+    )
 
 
 def validate_mode(mode: str) -> None:

@@ -44,15 +44,15 @@ class OpenAIClient:
             method="POST",
         )
         try:
-            with urllib.request.urlopen(req) as resp:
+            with urllib.request.urlopen(req, timeout=300) as resp:
                 raw = resp.read()
         except urllib.error.HTTPError as exc:
             raise RuntimeError(
                 f"OpenAI API returned HTTP {exc.code}: {exc.msg}"
             ) from exc
-        except urllib.error.URLError as exc:
+        except (urllib.error.URLError, TimeoutError, OSError) as exc:
             raise RuntimeError(
-                f"OpenAI request to {self._url} failed: {exc.reason}"
+                f"OpenAI request to {self._url} failed: {exc}"
             ) from exc
 
         try:
