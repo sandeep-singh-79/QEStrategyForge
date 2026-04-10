@@ -1,0 +1,6 @@
+Do not mix brownfield guidance into greenfield posture.
+Emphasize building quality foundations from the start: test architecture should be designed alongside system architecture.
+Recommend aggressive shift-left practices including unit-level automation and contract testing from sprint one.
+Prioritize establishing automation frameworks and CI/CD pipeline integration before manual test processes accumulate.
+Design the test pyramid shape intentionally rather than inheriting one from legacy patterns.
+Do not reference legacy migration, existing test debt, or stabilization of prior test assets.

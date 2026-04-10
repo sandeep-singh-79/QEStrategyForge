@@ -1,0 +1,6 @@
+Regulatory and compliance requirements are a primary driver for this engagement.
+Emphasize traceability between requirements, test cases, and defects throughout the strategy.
+Include audit trail recommendations: evidence collection, test execution logs, and sign-off workflows.
+Address regulatory compliance testing explicitly in every relevant section, not as an afterthought.
+Recommend governance checkpoints, approval gates, and documentation testing as first-class strategy elements.
+Ensure the strategy addresses regulatory reporting, change control, and validation documentation requirements.

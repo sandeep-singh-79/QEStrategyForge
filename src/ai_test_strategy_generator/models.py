@@ -81,6 +81,13 @@ class StrategyDocument:
 
 
 @dataclass(slots=True)
+class PromptTemplate:
+    name: str
+    version: str
+    template_text: str
+
+
+@dataclass(slots=True)
 class LLMConfig:
     model: str
     max_tokens: int = 4096

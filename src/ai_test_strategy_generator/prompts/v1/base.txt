@@ -1,0 +1,35 @@
+## Engagement Context
+{engagement_context}
+
+## Context Classification (Deterministic)
+{classifications}
+
+## Deterministic Rule Decisions
+{decisions}
+
+## Required Output Contract
+Your response must be a complete markdown test strategy document.
+It must include ALL of the following required section headings exactly as written:
+{required_headings}
+
+Each section must include the following required labeled lines with their exact values from the engagement context above:
+{required_labels}
+
+You MUST also embed every deterministic rule decision listed above as a labeled line in the relevant strategy section. Use the exact format "Decision Name: decision_value" with the underscore-separated value. For example, if the decisions include "layering_priority: lower_layers_first", your output must contain the line "Layering Priority: lower_layers_first" in the Layered Test Strategy section.
+
+Place each decision in its natural section:
+  Shift-Left Stance and Shift-Right Stance go in Lifecycle Posture.
+  Layering Priority goes in Layered Test Strategy.
+  Automation Adoption Path and Brownfield Transition Strategy go in Automation Strategy.
+  CI/CD Posture goes in CI/CD And Quality Gates as Target CI/CD Posture.
+  Governance Depth and Reporting Emphasis go in Defect, Triage, And Reporting Model. You MUST include both of these lines.
+  Assumption Mode and Strategy Confidence go in Assumptions, Gaps, And Open Questions or Executive Summary.
+  Do NOT invent decisions not listed above. Do NOT include a line for any decision that is absent from the Deterministic Rule Decisions section.
+
+## Instructions
+Do not invent facts, systems, constraints, or requirements that are not present in the engagement context above. If information is missing, state it explicitly in the Assumptions, Gaps, And Open Questions section.
+Surface all assumptions clearly. Do not present inferred or default values as confirmed facts. Use conditional language where certainty is not supported by the provided context.
+Do not modify or contradict the deterministic rule decisions listed above. Include them verbatim as labeled lines.
+{scenario_instructions}
+Ensure AI adoption guidance is consistent with the stated AI Adoption Posture.
+Write coherent strategy narrative connecting lifecycle, automation, governance, and AI posture.

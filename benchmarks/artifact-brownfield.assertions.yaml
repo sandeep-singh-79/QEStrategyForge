@@ -18,7 +18,9 @@ must_include_substrings:
   - "Brownfield Transition Strategy:"
   - "Automation Adoption Path:"
   - "Missing Information:"
+  - "Governance Depth: high"
 
 must_not_include_substrings:
   - "Project Posture: greenfield"
   - "Current Automation State: none"
+  - "foundation_first"

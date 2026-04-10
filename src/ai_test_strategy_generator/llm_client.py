@@ -66,8 +66,8 @@ Non-Functional Priorities: performance, security, accessibility, and resilience
 
 ## Automation Strategy
 Current Automation State: partial
-Target Automation State: phased expansion
-Automation Adoption Path: phased expansion
+Target Automation State: guided by phased_expansion
+Automation Adoption Path: phased_expansion
 Brownfield Transition Strategy: assess_reuse_stabilize_retire_replace
 CI/CD Integration Target: pipeline quality gates scaled to maturity
 
@@ -86,6 +86,7 @@ Environment Stability: controlled environments with stable configurations
 ## Defect, Triage, And Reporting Model
 Defect Model: risk-based triage with severity classification
 Reporting Emphasis: medium
+Governance Depth: high
 
 ## AI Usage Model
 AI Adoption Posture: cautious
@@ -94,6 +95,8 @@ AI Tooling: limited to low-risk test generation assistance
 
 ## Assumptions, Gaps, And Open Questions
 Missing Information: none
+Assumption Mode: explicit
+Strategy Confidence: standard
 Strategy Confidence Note: based on provided context
 
 ## Recommended Next Steps

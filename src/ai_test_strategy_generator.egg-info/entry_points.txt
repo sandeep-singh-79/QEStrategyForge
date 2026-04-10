@@ -1,0 +1,2 @@
+[console_scripts]
+ai-test-strategy-generator = ai_test_strategy_generator.cli:main

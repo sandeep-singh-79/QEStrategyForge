@@ -8,7 +8,12 @@ must_include_substrings:
   - "Missing Information:"
   - "Assumptions"
   - "Open Questions"
+  - "Strategy Confidence: conditional"
+  - "Assumption Mode: explicit"
+  - "Governance Depth: high"
 
 must_not_include_substrings:
   - "current pipeline gates already enforce release quality"
   - "existing automation estate provides strong baseline"
+  - "Strategy Confidence: standard"
+  - "optimize_and_govern"
