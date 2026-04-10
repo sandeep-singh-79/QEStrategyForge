@@ -1,6 +1,6 @@
 # AI Test Strategy Generator - Learning Guide
 
-Last Updated: 2026-04-09
+Last Updated: 2026-04-10
 
 ## Purpose
 
@@ -112,6 +112,12 @@ These are separate documents covering specific testing types in full depth — w
 | [Accessibility Testing](TESTING-TYPE-ACCESSIBILITY.md) | WCAG; automated scanning, keyboard testing, screen reader testing; pipeline integration; legal risk |
 | [Chaos and Resilience Testing](TESTING-TYPE-CHAOS.md) | Fault types; experiment structure; prerequisites; game days; chaos in CI/CD vs. production |
 
+## Prompt and LLM Engineering
+
+| Document | What It Covers |
+|---|---|
+| [Prompt Engineering](PROMPT-ENGINEERING.md) | Template architecture, scenario selection logic, output contract design, repair mechanism, how to extend templates, evaluation with `--compare` |
+
 ## How To Think About Automation Strategy
 
 Automation strategy should answer:
@@ -186,7 +192,7 @@ The LLM receives a structured context bundle — the same normalized document th
 
 There are two safety layers:
 
-1. **Structural validation**: the LLM output is validated against the same required-section rules as the deterministic renderer. If it fails, a constrained repair pass runs to fill gaps.
+1. **Structural validation**: the LLM output is validated against the same required-section rules as the deterministic renderer. If it fails, a constrained repair pass runs to fill gaps using actual input and decision values (not generic placeholders).
 2. **Deterministic fallback**: if the LLM call fails entirely (network error, timeout, provider error) or if repair still fails, the system falls back to the deterministic renderer automatically. The caller receives a `3` exit code indicating fallback was used.
 
 This means the system always produces a valid strategy document — either LLM-assisted or deterministic. The LLM adds synthesis quality; it is never a point of failure.
@@ -199,6 +205,27 @@ The provider is selected at runtime:
 All three implement the same `LLMClient` Protocol. Switching providers does not change the orchestration logic.
 
 A key design rule: provider configuration is resolved in four layers (defaults → config file → env vars → CLI flags). API keys and secrets always come from environment variables — never from config files.
+
+## How the Prompt Template System Works
+
+The prompt sent to the LLM is assembled from two layers of templates stored in `src/ai_test_strategy_generator/prompts/v1/`:
+
+1. **`base.txt`** — the structural wrapper. It has six named placeholders filled at runtime: engagement context, classification results, deterministic rule decisions, the required output contract (headings and labels), and scenario-specific instructions.
+
+2. **Scenario templates** — loaded based on the classification result and injected into the `{scenario_instructions}` placeholder in base.txt:
+
+| Template | When Selected | Core Instruction Style |
+|---|---|---|
+| `incomplete_context.txt` | information_completeness == incomplete | Explicit assumptions; conditional language throughout |
+| `compliance_heavy.txt` | regulatory_sensitivity == high | Traceability-first; audit trail; governance checkpoints |
+| `greenfield.txt` | project_posture == greenfield | Build from scratch; test pyramid from day one; shift-left aggressive |
+| `brownfield.txt` | default | Stabilize before scaling; regression safety; phased modernization |
+
+The selection is a priority chain: `incomplete_context > compliance_heavy > greenfield > brownfield`. A high-regulation incomplete-context engagement always gets `incomplete_context` scenario instructions, not `compliance_heavy`.
+
+Templates are plain text with Python `str.format()` placeholders. To add a new scenario or modify emphasis, edit the relevant `.txt` file in `prompts/v1/` without touching any Python code.
+
+For a deeper treatment — template anatomy, output contract design, repair mechanism, how to extend, and evaluation patterns — see [Prompt Engineering](PROMPT-ENGINEERING.md).
 
 ## Learning Exercises For This Repo
 
@@ -243,6 +270,24 @@ A key design rule: provider configuration is resolved in four layers (defaults �
 - use the [Automation Viability Check](STRATEGY-FRAMEWORKS.md#the-automation-viability-check) to decide what to automate first
 - use the [Assumption Visibility Rule](STRATEGY-FRAMEWORKS.md#the-assumption-visibility-rule) to document what the strategy depends on
 - use the [Shift-Left / Shift-Right Balance Check](STRATEGY-FRAMEWORKS.md#the-shift-left--shift-right-balance-check) to design the quality gate model
+
+10. Explore the prompt template system — see [Prompt Engineering](PROMPT-ENGINEERING.md):
+- read `prompts/v1/base.txt` and identify each placeholder
+- read all four scenario templates and note what each one emphasises differently
+- predict which template will be selected for each benchmark scenario before running
+- run the `incomplete-context` benchmark in LLM-assisted mode and check that conditional language appears in the output
+
+11. Use `--compare` to evaluate scenario-template quality:
+- run the `greenfield-low-automation` benchmark with `--mode llm_assisted` and `--compare compare.md`
+- open `compare.md` and compare word count, section count, and narrative depth between deterministic and LLM-assisted
+- identify two things the LLM added that the deterministic renderer could not
+- identify one thing the deterministic renderer produced that the LLM got wrong or skipped
+
+12. Trace the repair mechanism for a structurally incomplete LLM response:
+- read `_repair_output()` in `llm_flow.py`
+- understand how it uses actual input values and decision values (not generic placeholders)
+- understand the conditional logic for `Brownfield Transition Strategy:` — it is only injected when `brownfield_transition_strategy != not_applicable`
+- explain in plain language why a repair-injected strategy is still more useful than generic fallback text
 
 ## Expected Learning Outcome
 

@@ -13,10 +13,12 @@ Key capabilities:
 - Context classification across greenfield, brownfield, and partial-automation scenarios
 - Deterministic rule engine producing engagement-specific strategies
 - Artifact-folder ingestion: load project summaries, API docs, test-state files, and requirements from a folder
-- LLM-assisted synthesis over a normalized context bundle
+- Versioned prompt templates with per-scenario specialization (greenfield, brownfield, compliance-heavy, incomplete-context)
+- LLM-assisted synthesis over a normalized context bundle, with automatic repair and deterministic fallback
 - Four-layer provider configuration (built-in defaults → config file → env vars → CLI flags)
-- Benchmark-driven pass/fail evaluation on all scenarios
-- 240+ automated tests; 100% pass rate required before merge
+- Benchmark-driven pass/fail evaluation on all scenarios — structural and content-level assertions
+- Side-by-side deterministic vs LLM comparison with `--compare`
+- 268+ automated tests; 100% pass rate required before merge
 
 ## Repo Layout
 
@@ -66,13 +68,23 @@ $env:STRATEGY_LLM_API_KEY='sk-...'
 python -m ai_test_strategy_generator.cli benchmarks\brownfield-partial-automation.input.yaml --provider openai --model gpt-4o
 ```
 
+LLM-assisted path — with side-by-side comparison report:
+
+```powershell
+python -m ai_test_strategy_generator.cli benchmarks\brownfield-partial-automation.input.yaml `
+  --mode llm_assisted --provider ollama --model glm-5:cloud `
+  --assertions benchmarks\brownfield-partial-automation.assertions.yaml `
+  --output output\strategy-llm.md `
+  --compare output\comparison.md
+```
+
 Run the test suite (excluding live provider tests):
 
 ```powershell
-python -m pytest tests/ --ignore=tests/test_live_ollama.py -q
+python -m pytest tests/ -k "not live" -q
 ```
 
-Run live Ollama tests (requires a running Ollama instance):
+Run live Ollama benchmarks (requires a running Ollama instance):
 
 ```powershell
 python -m pytest tests/test_live_ollama.py -v
@@ -98,6 +110,7 @@ CLI flags (`--provider`, `--model`, `--base-url`, `--temperature`, `--max-tokens
 
 ### Usage and Reference
 - [Usage Guide](docs/USAGE-GUIDE.md)
+- [Prompt Engineering](docs/PROMPT-ENGINEERING.md)
 - [Validation Harness](docs/VALIDATION-HARNESS.md)
 - [Decision Rules](docs/DECISION-RULES.md)
 - [Input Template](docs/V1-INPUT-TEMPLATE.md)
