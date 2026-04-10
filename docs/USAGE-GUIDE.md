@@ -112,8 +112,11 @@ python -m ai_test_strategy_generator.cli benchmarks\brownfield-partial-automatio
 
 The comparison report includes:
 - Summary table: output lines, word count, section count for both paths
+- Quality Indicators table: headings and labels naturally produced by the LLM vs injected by the repair pass (only shown when `repair_stats` are available)
 - Full deterministic strategy output
 - Full LLM-assisted strategy output
+
+The Quality Indicators table is the recommended signal for evaluating prompt quality — a high injection count indicates the LLM skipped required content and the repair pass compensated.
 
 This is the recommended way to evaluate whether a prompt template change improved LLM output quality.
 
@@ -140,17 +143,17 @@ API keys must always come from `STRATEGY_LLM_API_KEY` environment variable. Writ
 
 ## Run The Test Suite
 
-Full suite (excluding live provider tests):
+Full suite (live tests excluded automatically — `pyproject.toml` applies `-k 'not live'` by default):
 
 ```powershell
 $env:PYTHONPATH='src'
-python -m pytest tests/ -k "not live" -q
+python -m pytest tests/ -q
 ```
 
 All tests including live (requires a running Ollama instance):
 
 ```powershell
-python -m pytest tests/ -v
+python -m pytest tests/ -v -k ''
 ```
 
 Live tests only:
@@ -159,7 +162,7 @@ Live tests only:
 python -m pytest tests/test_live_ollama.py -v
 ```
 
-Expected baseline: 268 non-live tests passing, 6 live Ollama benchmarks passing. Live tests auto-skip when Ollama is unreachable.
+Expected baseline: 287 non-live tests passing, 6 live Ollama benchmarks passing. Live tests auto-skip when Ollama is unreachable.
 
 ## Benchmark Execution Flow
 

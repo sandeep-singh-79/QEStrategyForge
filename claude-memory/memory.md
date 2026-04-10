@@ -47,13 +47,13 @@ Current state, decisions, and active priorities for the `ai-test-strategy-genera
 - AGPL is the closest fit to the desired reciprocity behavior, but it does not require upstream pull requests back to this specific repository.
 
 ## Active Next Work
-- Phase 8 is now complete (all 6 slices delivered, 268 non-live tests green, 6 live Ollama benchmark tests pass at exit_code 0).
-- Phase 8 delivered: versioned prompt templates (8.1), 4 scenario templates (8.2), scenario selection wiring (8.3), strengthened benchmark assertions (8.4), live benchmark iteration (8.5), --compare CLI flag (8.6).
-- Candidate directions for Phase 9:
-  - OpenAI live integration test (mirrors test_live_ollama.py for OpenAI/Gemini)
-  - Karpathy-style prompt optimization loop (now feasible with content-level assertions in place)
+- Phase 9 is now complete (all 13 slices A1–E2 delivered, 287 non-live tests green, 6 live Ollama benchmark tests pass).
+- Phase 9 delivered: duplicate prompt field fix (A1), timeout=300 for OpenAI/Gemini (A2), Gemini repr masking (A3), FlowResult TypedDict + EXIT_* constants + make_flow_result() (B1), structured logging in llm_flow.py (B2), line-anchored repair logic (B3), conftest.py + pytest markers (C1), live test dedup (C2), rule engine tests 4→9 (D1), LLM repair edge cases +4 (D2), contract tests new file +7 (D3), repair_stats in FlowResult (E1), Quality Indicators table in comparison.py (E2).
+- Candidate directions for Phase 10:
+  - OpenAI/Gemini live integration tests
+  - Karpathy-style prompt optimization loop
   - Extended artifact support (.pdf, .docx)
-  - Quality scoring model (fluency, accuracy vs deterministic baseline)
+  - Quality scoring model
   - CODEX.md reference document
 
 ## Blockers
@@ -69,15 +69,14 @@ Current state, decisions, and active priorities for the `ai-test-strategy-genera
 - **Multi-agent orchestration**: no autonomous agent loop.
 
 ## Implementation Snapshot
-- Phases 1–8 complete.
-- Phase 8 delivered: prompt_builder.py refactored to use template system; prompts/v1/ directory with base.txt + 4 scenario templates; template_loader.py; _select_scenario() with priority chain (incomplete_context > compliance_heavy > greenfield > brownfield); REQUIRED_LABELS expanded to 18 (added Shift-Left Stance, Layering Priority, Automation Adoption Path, Governance Depth, Reporting Emphasis, Assumption Mode, Strategy Confidence); _repair_output() now injects actual input values; brownfield conditional repair for Brownfield Transition Strategy; comparison.py + --compare CLI flag; all 6 benchmark assertion files strengthened with content-level checks.
-- Test baseline: 268 non-live tests passing. 6 live Ollama tests passing (glm-5:cloud, ~8 min).
-- Key new modules: template_loader.py, comparison.py, prompts/v1/{base,brownfield,greenfield,compliance_heavy,incomplete_context}.txt.
-- Key updated modules: prompt_builder.py (template-based, scenario-aware), output_validator.py (18 required labels), llm_flow.py (context-aware repair), cli.py (--compare flag).
+- Phases 1–9 complete.
+- Phase 9 delivered: prompt_builder.py duplicate field removed; timeout=300 added to OpenAI/Gemini clients; GeminiClient repr masks key; FlowResult TypedDict + EXIT_* constants + make_flow_result() factory in models.py; all 3 flow modules (end_to_end_flow, artifact_end_to_end_flow, llm_flow) return FlowResult; structured logging at all LLM decision points via `_log`; _repair_output() line-anchored checks + returns (str, dict) with counts; repair_stats wired through LLM flow into FlowResult; Quality Indicators table in comparison.py when repair_stats passed; conftest.py + pytest markers (live, benchmark); live test helper extracted.
+- Test baseline: 287 non-live tests passing. 6 live Ollama tests passing (glm-5:cloud, ~8 min).
+- Key updated modules in Phase 9: prompt_builder.py (A1), openai_client.py (A2), gemini_client.py (A2, A3), models.py (B1, E1), end_to_end_flow.py (B1), artifact_end_to_end_flow.py (B1), llm_flow.py (B2, B3, E1), comparison.py (E2), pyproject.toml (C1).
+- Key new test files: tests/conftest.py (C1), tests/test_contracts.py (D3).
 - not_applicable decision values are filtered from the prompt decisions block.
 - LLM temperature=0.0; some nondeterminism remains at this setting (GLM model specific).
-- Slice 4.6 is complete.
-- Slice 4.12 is complete.
+- Slice 4.6 is complete. Slice 4.12 is complete.
 - Slice 4.13 is complete.
 - Python project scaffold exists.
 - Structured YAML input loading works.

@@ -127,6 +127,19 @@ The brownfield transition strategy is only injected when its decision value is n
 
 This makes repair output meaningfully correct (engagement-specific values) rather than structurally compliant but content-empty.
 
+**Repair statistics** are counted per run and stored in `FlowResult.repair_stats`:
+
+| Stat | Meaning |
+|---|---|
+| `headings_injected` | Number of required headings the repair pass had to add |
+| `labels_injected` | Number of required labels the repair pass had to add |
+| `total_headings` | Total required headings (14) |
+| `total_labels` | Total required labels (18) |
+
+A value of `headings_injected: 0, labels_injected: 0` means the LLM naturally produced a structurally complete document. Higher counts indicate how much relied on the repair safety net.
+
+These statistics are surfaced in the comparison report Quality Indicators table when `--compare` is used.
+
 ---
 
 ## Benchmark Assertions
@@ -159,8 +172,20 @@ python -m ai_test_strategy_generator.cli benchmarks\greenfield-low-automation.in
 
 The report (`comparison.md`) contains:
 - A summary table: output lines, word count, section count for both paths
+- A **Quality Indicators** table: headings and labels naturally produced by the LLM vs injected by the repair pass
 - Full deterministic strategy
 - Full LLM-assisted strategy
+
+**Quality Indicators table example:**
+
+| Metric | Value |
+|---|---|
+| Headings from LLM | 12 / 14 |
+| Headings injected by repair | 2 |
+| Labels from LLM | 18 / 18 |
+| Labels injected by repair | 0 |
+
+The Quality Indicators table only appears when the LLM-assisted path ran and returned repair statistics. When the deterministic fallback path was used (exit code `3`), `repair_stats` are not present and the table is omitted.
 
 **What to look for in a comparison:**
 
