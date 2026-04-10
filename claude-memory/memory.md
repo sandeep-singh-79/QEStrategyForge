@@ -47,37 +47,35 @@ Current state, decisions, and active priorities for the `ai-test-strategy-genera
 - AGPL is the closest fit to the desired reciprocity behavior, but it does not require upstream pull requests back to this specific repository.
 
 ## Active Next Work
-- Phase 7 is now complete (all 9 slices delivered, 240 tests green, 2 live Ollama tests pass).
-- Candidate directions for Phase 8:
-  - Prompt engineering: versioned prompt templates, per-scenario specialization, prompt optimization loop
-  - Content-level benchmark assertions for LLM path (real provider outputs)
-  - Quality scoring model (fluency, accuracy, structural coverage vs FakeLLMClient baseline)
+- Phase 8 is now complete (all 6 slices delivered, 268 non-live tests green, 6 live Ollama benchmark tests pass at exit_code 0).
+- Phase 8 delivered: versioned prompt templates (8.1), 4 scenario templates (8.2), scenario selection wiring (8.3), strengthened benchmark assertions (8.4), live benchmark iteration (8.5), --compare CLI flag (8.6).
+- Candidate directions for Phase 9:
   - OpenAI live integration test (mirrors test_live_ollama.py for OpenAI/Gemini)
+  - Karpathy-style prompt optimization loop (now feasible with content-level assertions in place)
   - Extended artifact support (.pdf, .docx)
-  - CODEX.md reference document (deferred from Phase 6)
+  - Quality scoring model (fluency, accuracy vs deterministic baseline)
+  - CODEX.md reference document
 
 ## Blockers
 - No setup blocker.
 - Git in this environment may leave stray lock files in `.git` during some commands; if Git operations fail, inspect lock-file state first.
 
 ## Known Deferred Technical Debt
-- **Prompt versioning not tracked**: prompts are built dynamically with no version history.
-- **Per-scenario prompt specialization**: single prompt template regardless of greenfield/brownfield posture.
-- **Prompt optimization loop**: Karpathy-style loop deferred until real evaluator + content-level assertions exist.
-- **Content-level benchmark assertions for LLM path**: FakeLLMClient is structural only; real scenario pass/fail needs a live provider.
+- **Prompt optimization loop**: Karpathy-style loop is now feasible; content-level assertions + live benchmarks exist. Deferred to Phase 9.
+- **Live integration tests for OpenAI and Gemini**: only Ollama has live tests; OpenAI/Gemini deferred.
 - **Extended artifact types**: `.pdf`, `.docx`, `.xlsx`, `.csv` still not supported.
-- **Live integration tests for OpenAI and Gemini**: only Ollama has a live test; OpenAI/Gemini integration tests deferred.
+- **Quality scoring model**: fluency/accuracy scoring not yet attempted.
 - **CODEX.md reference**: deferred from Phase 6, still not created.
 - **Multi-agent orchestration**: no autonomous agent loop.
 
 ## Implementation Snapshot
-- Phases 1–7 complete.
-- Phase 7 delivered: ProviderConfig + config_loader (7.1), CLI full wiring + DI routing (7.2), OllamaClient (7.3), OpenAIClient (7.4), GeminiClient (7.5), client factory (7.6), live Ollama integration test with glm-5:cloud (7.7), artifact_mapping/loader coverage hardening to 100% (7.8), greenfield artifact benchmark (7.9).
-- Test baseline: 240 non-live tests passing. 2 live Ollama tests passing (glm-5:cloud, ~2.5 min).
-- Key new modules: config_loader.py, ollama_client.py, openai_client.py, gemini_client.py, client_factory.py.
-- CLI is now a full composition root: builds ProviderConfig from config file → env vars → CLI flags, creates LLMClient via factory, injects into flow functions.
-- LLM flow resilience: RuntimeError from any provider is caught and triggers deterministic fallback (empty string → repair → deterministic renderer).
-- Slice 4.11 is complete.
+- Phases 1–8 complete.
+- Phase 8 delivered: prompt_builder.py refactored to use template system; prompts/v1/ directory with base.txt + 4 scenario templates; template_loader.py; _select_scenario() with priority chain (incomplete_context > compliance_heavy > greenfield > brownfield); REQUIRED_LABELS expanded to 18 (added Shift-Left Stance, Layering Priority, Automation Adoption Path, Governance Depth, Reporting Emphasis, Assumption Mode, Strategy Confidence); _repair_output() now injects actual input values; brownfield conditional repair for Brownfield Transition Strategy; comparison.py + --compare CLI flag; all 6 benchmark assertion files strengthened with content-level checks.
+- Test baseline: 268 non-live tests passing. 6 live Ollama tests passing (glm-5:cloud, ~8 min).
+- Key new modules: template_loader.py, comparison.py, prompts/v1/{base,brownfield,greenfield,compliance_heavy,incomplete_context}.txt.
+- Key updated modules: prompt_builder.py (template-based, scenario-aware), output_validator.py (18 required labels), llm_flow.py (context-aware repair), cli.py (--compare flag).
+- not_applicable decision values are filtered from the prompt decisions block.
+- LLM temperature=0.0; some nondeterminism remains at this setting (GLM model specific).
 - Slice 4.6 is complete.
 - Slice 4.12 is complete.
 - Slice 4.13 is complete.
