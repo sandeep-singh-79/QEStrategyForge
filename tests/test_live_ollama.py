@@ -127,6 +127,116 @@ class TestLiveOllamaBenchmark(unittest.TestCase):
         finally:
             output_path.unlink(missing_ok=True)
 
+    def test_greenfield_benchmark_produces_valid_output(self) -> None:
+        input_path = _BENCHMARK_ROOT / "greenfield-low-automation.input.yaml"
+        assertions_path = _BENCHMARK_ROOT / "greenfield-low-automation.assertions.yaml"
+
+        with tempfile.NamedTemporaryFile(suffix=".md", delete=False) as f:
+            output_path = Path(f.name)
+        try:
+            provider_config = self._make_provider_config()
+            llm_client = create_llm_client(provider_config)
+            llm_config = LLMConfig(
+                model=provider_config.model,
+                max_tokens=provider_config.max_tokens,
+                temperature=provider_config.temperature,
+            )
+            result = run_llm_benchmark_flow(
+                input_path, assertions_path, output_path, llm_config, llm_client
+            )
+            self.assertIn(
+                result["exit_code"],
+                (0, 4),
+                msg=f"Unexpected exit code {result['exit_code']}.\n"
+                    f"Validation errors: {result['validation_errors']}\n"
+                    f"Assertion errors: {result['assertion_errors']}",
+            )
+        finally:
+            output_path.unlink(missing_ok=True)
+
+    def test_incomplete_context_benchmark_produces_valid_output(self) -> None:
+        input_path = _BENCHMARK_ROOT / "incomplete-context.input.yaml"
+        assertions_path = _BENCHMARK_ROOT / "incomplete-context.assertions.yaml"
+
+        with tempfile.NamedTemporaryFile(suffix=".md", delete=False) as f:
+            output_path = Path(f.name)
+        try:
+            provider_config = self._make_provider_config()
+            llm_client = create_llm_client(provider_config)
+            llm_config = LLMConfig(
+                model=provider_config.model,
+                max_tokens=provider_config.max_tokens,
+                temperature=provider_config.temperature,
+            )
+            result = run_llm_benchmark_flow(
+                input_path, assertions_path, output_path, llm_config, llm_client
+            )
+            self.assertIn(
+                result["exit_code"],
+                (0, 4),
+                msg=f"Unexpected exit code {result['exit_code']}.\n"
+                    f"Validation errors: {result['validation_errors']}\n"
+                    f"Assertion errors: {result['assertion_errors']}",
+            )
+        finally:
+            output_path.unlink(missing_ok=True)
+
+    def test_strong_automation_benchmark_produces_valid_output(self) -> None:
+        input_path = _BENCHMARK_ROOT / "strong-automation-weak-governance.input.yaml"
+        assertions_path = _BENCHMARK_ROOT / "strong-automation-weak-governance.assertions.yaml"
+
+        with tempfile.NamedTemporaryFile(suffix=".md", delete=False) as f:
+            output_path = Path(f.name)
+        try:
+            provider_config = self._make_provider_config()
+            llm_client = create_llm_client(provider_config)
+            llm_config = LLMConfig(
+                model=provider_config.model,
+                max_tokens=provider_config.max_tokens,
+                temperature=provider_config.temperature,
+            )
+            result = run_llm_benchmark_flow(
+                input_path, assertions_path, output_path, llm_config, llm_client
+            )
+            self.assertIn(
+                result["exit_code"],
+                (0, 4),
+                msg=f"Unexpected exit code {result['exit_code']}.\n"
+                    f"Validation errors: {result['validation_errors']}\n"
+                    f"Assertion errors: {result['assertion_errors']}",
+            )
+        finally:
+            output_path.unlink(missing_ok=True)
+
+    def test_artifact_brownfield_benchmark_via_ollama(self) -> None:
+        from ai_test_strategy_generator.llm_flow import run_llm_artifact_benchmark_flow
+
+        artifact_folder = _BENCHMARK_ROOT / "artifact-brownfield"
+        assertions_path = _BENCHMARK_ROOT / "artifact-brownfield.assertions.yaml"
+
+        with tempfile.NamedTemporaryFile(suffix=".md", delete=False) as f:
+            output_path = Path(f.name)
+        try:
+            provider_config = self._make_provider_config()
+            llm_client = create_llm_client(provider_config)
+            llm_config = LLMConfig(
+                model=provider_config.model,
+                max_tokens=provider_config.max_tokens,
+                temperature=provider_config.temperature,
+            )
+            result = run_llm_artifact_benchmark_flow(
+                artifact_folder, assertions_path, output_path, llm_config, llm_client
+            )
+            self.assertIn(
+                result["exit_code"],
+                (0, 4),
+                msg=f"Unexpected exit code {result['exit_code']}.\n"
+                    f"Validation errors: {result['validation_errors']}\n"
+                    f"Assertion errors: {result['assertion_errors']}",
+            )
+        finally:
+            output_path.unlink(missing_ok=True)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -4,6 +4,7 @@ import unittest
 from pathlib import Path
 
 from ai_test_strategy_generator.models import InputPackage
+from ai_test_strategy_generator.prompt_builder import _select_scenario
 
 
 def _make_brownfield_package() -> InputPackage:
@@ -103,10 +104,11 @@ class PromptBuilderTests(unittest.TestCase):
 
         self.assertIn("assess_reuse_stabilize_retire_replace", prompt)
 
-    def test_prompt_includes_no_greenfield_posture_contamination_instruction(self) -> None:
+    def test_prompt_includes_scenario_specific_instructions(self) -> None:
         prompt = self._build()
 
-        self.assertIn("greenfield", prompt.lower())  # mentioned explicitly to warn against mixing
+        # Insurance domain triggers compliance_heavy scenario via regulatory_sensitivity=high
+        self.assertIn("compliance", prompt.lower())
 
     def test_prompt_is_non_empty_string(self) -> None:
         prompt = self._build()
@@ -118,6 +120,128 @@ class PromptBuilderTests(unittest.TestCase):
         prompt = self._build()
 
         self.assertIn("not modify", prompt.lower())
+
+
+class ScenarioSelectionTests(unittest.TestCase):
+    def test_brownfield_posture_selects_brownfield(self) -> None:
+        cls = {
+            "project_posture": "brownfield",
+            "automation_maturity": "partial",
+            "ci_cd_maturity": "partial",
+            "system_profile": "api_first",
+            "regulatory_sensitivity": "low",
+            "information_completeness": "sufficient",
+        }
+        self.assertEqual(_select_scenario(cls), "brownfield")
+
+    def test_greenfield_posture_selects_greenfield(self) -> None:
+        cls = {
+            "project_posture": "greenfield",
+            "automation_maturity": "none",
+            "ci_cd_maturity": "none",
+            "system_profile": "general",
+            "regulatory_sensitivity": "low",
+            "information_completeness": "sufficient",
+        }
+        self.assertEqual(_select_scenario(cls), "greenfield")
+
+    def test_incomplete_context_overrides_all(self) -> None:
+        cls = {
+            "project_posture": "greenfield",
+            "automation_maturity": "unknown",
+            "ci_cd_maturity": "unknown",
+            "system_profile": "general",
+            "regulatory_sensitivity": "high",
+            "information_completeness": "incomplete",
+        }
+        self.assertEqual(_select_scenario(cls), "incomplete_context")
+
+    def test_compliance_heavy_overrides_greenfield(self) -> None:
+        cls = {
+            "project_posture": "greenfield",
+            "automation_maturity": "none",
+            "ci_cd_maturity": "none",
+            "system_profile": "general",
+            "regulatory_sensitivity": "high",
+            "information_completeness": "sufficient",
+        }
+        self.assertEqual(_select_scenario(cls), "compliance_heavy")
+
+    def test_compliance_heavy_overrides_brownfield(self) -> None:
+        cls = {
+            "project_posture": "brownfield",
+            "automation_maturity": "partial",
+            "ci_cd_maturity": "partial",
+            "system_profile": "api_first",
+            "regulatory_sensitivity": "high",
+            "information_completeness": "sufficient",
+        }
+        self.assertEqual(_select_scenario(cls), "compliance_heavy")
+
+    def test_unknown_posture_defaults_to_brownfield(self) -> None:
+        cls = {
+            "project_posture": "",
+            "automation_maturity": "unknown",
+            "ci_cd_maturity": "unknown",
+            "system_profile": "general",
+            "regulatory_sensitivity": "low",
+            "information_completeness": "sufficient",
+        }
+        self.assertEqual(_select_scenario(cls), "brownfield")
+
+
+class ScenarioContentInPromptTests(unittest.TestCase):
+    def _build_with_posture(self, posture: str, domain: str = "retail") -> str:
+        from ai_test_strategy_generator.prompt_builder import build_prompt
+        from ai_test_strategy_generator.context_classifier import classify_context
+        from ai_test_strategy_generator.rule_engine import apply_rules
+
+        pkg = InputPackage(
+            source_path=Path("test.yaml"),
+            raw={},
+            normalized={
+                "project_posture": posture,
+                "delivery_model": "Agile",
+                "system_type": "web",
+                "domain": domain,
+                "quality_goal": "quality",
+                "business_goal": "delivery",
+                "existing_automation_state": "none",
+                "target_automation_state": "full",
+                "ci_cd_maturity": "none",
+                "ai_adoption_posture": "cautious",
+                "regulatory_or_compliance_needs": [],
+                "critical_business_flows": [],
+                "known_constraints": [],
+                "delivery_risks": [],
+                "key_integrations": [],
+                "missing_information": [],
+                "human_review_expectations": [],
+                "environment_maturity": "none",
+                "test_data_maturity": "none",
+            },
+        )
+        cls = classify_context(pkg)
+        dec = apply_rules(cls)
+        return build_prompt(pkg, cls, dec)
+
+    def test_greenfield_prompt_contains_greenfield_instructions(self) -> None:
+        prompt = self._build_with_posture("greenfield")
+
+        self.assertIn("shift-left", prompt)
+        self.assertIn("test pyramid", prompt.lower())
+
+    def test_brownfield_prompt_contains_brownfield_instructions(self) -> None:
+        prompt = self._build_with_posture("brownfield")
+
+        self.assertIn("stabilization", prompt.lower())
+        self.assertIn("regression", prompt.lower())
+
+    def test_compliance_heavy_prompt_contains_compliance_instructions(self) -> None:
+        prompt = self._build_with_posture("brownfield", domain="insurance")
+
+        self.assertIn("traceability", prompt.lower())
+        self.assertIn("audit", prompt.lower())
 
 
 if __name__ == "__main__":

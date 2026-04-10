@@ -8,7 +8,12 @@ must_include_substrings:
   - "Shift-Left Stance:"
   - "Layering Priority:"
   - "Automation Adoption Path:"
+  - "foundation_first"
+  - "lower_layers_first"
+  - "Governance Depth: light"
 
 must_not_include_substrings:
   - "Brownfield Transition Strategy:"
   - "Project Posture: brownfield"
+  - "phased_expansion"
+  - "optimize_and_govern"

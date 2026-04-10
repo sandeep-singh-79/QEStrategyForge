@@ -8,8 +8,12 @@ must_include_substrings:
   - "Target Automation State:"
   - "quality gate"
   - "release"
-  - "reporting"
+  - "Reporting Emphasis: high"
+  - "optimize_and_govern"
+  - "pipeline_native"
+  - "Governance Depth: light"
 
 must_not_include_substrings:
   - "Current Automation State: none"
   - "build the automation foundation from scratch"
+  - "foundation_first"

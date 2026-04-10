@@ -31,6 +31,13 @@ REQUIRED_LABELS = [
     "AI Adoption Posture:",
     "Human Review Boundaries:",
     "Missing Information:",
+    "Shift-Left Stance:",
+    "Layering Priority:",
+    "Automation Adoption Path:",
+    "Governance Depth:",
+    "Reporting Emphasis:",
+    "Assumption Mode:",
+    "Strategy Confidence:",
     "Recommended Immediate Actions:",
 ]
 

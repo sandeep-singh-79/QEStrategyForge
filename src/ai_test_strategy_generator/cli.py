@@ -3,10 +3,12 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+import tempfile
 from pathlib import Path
 
 from ai_test_strategy_generator.artifact_end_to_end_flow import run_artifact_benchmark_flow
 from ai_test_strategy_generator.client_factory import create_llm_client
+from ai_test_strategy_generator.comparison import build_comparison_report
 from ai_test_strategy_generator.config_loader import load_config
 from ai_test_strategy_generator.end_to_end_flow import run_benchmark_flow
 from ai_test_strategy_generator.llm_flow import (
@@ -82,6 +84,12 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=None,
         help="Maximum output tokens (overrides config file and env var).",
+    )
+    parser.add_argument(
+        "--compare",
+        default=None,
+        metavar="COMPARE_FILE",
+        help="Generate a deterministic-vs-LLM comparison report saved to this .md path.",
     )
     return parser
 
@@ -165,6 +173,9 @@ def main() -> None:
             result = run_llm_benchmark_flow(
                 args.input_file, args.assertions, args.output, llm_config, llm_client
             )
+
+        if args.compare and result["exit_code"] in (0, 4):
+            _write_comparison(args, has_artifact, llm_config, result["output_path"])
     else:
         # deterministic
         if has_artifact:
@@ -175,3 +186,33 @@ def main() -> None:
             result = run_benchmark_flow(args.input_file, args.assertions, args.output)
 
     raise SystemExit(result["exit_code"])
+
+
+def _write_comparison(
+    args: argparse.Namespace,
+    has_artifact: bool,
+    llm_config: LLMConfig,
+    llm_output_path: str,
+) -> None:
+    """Run the deterministic flow and write a side-by-side comparison report."""
+    with tempfile.NamedTemporaryFile(suffix=".md", delete=False) as f:
+        det_out = Path(f.name)
+    try:
+        if has_artifact:
+            run_artifact_benchmark_flow(args.artifact_folder, args.assertions, str(det_out))
+        else:
+            run_benchmark_flow(args.input_file, args.assertions, str(det_out))
+
+        det_markdown = det_out.read_text(encoding="utf-8") if det_out.exists() else ""
+    finally:
+        det_out.unlink(missing_ok=True)
+
+    llm_path = Path(llm_output_path)
+    llm_markdown = llm_path.read_text(encoding="utf-8") if llm_path.exists() else ""
+
+    input_description = args.artifact_folder if has_artifact else args.input_file
+    report = build_comparison_report(input_description, det_markdown, llm_markdown)
+
+    compare_path = Path(args.compare)
+    compare_path.parent.mkdir(parents=True, exist_ok=True)
+    compare_path.write_text(report, encoding="utf-8")

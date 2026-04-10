@@ -16,6 +16,7 @@ must_include_substrings:
   - "Shift-Left Stance:"
   - "Layering Priority:"
   - "Automation Adoption Path:"
+  - "Governance Depth: high"
 
 must_not_include_substrings:
   - "Project Posture: brownfield"

@@ -1,0 +1,6 @@
+Do not mix greenfield guidance into brownfield posture.
+Prioritize stabilization and reuse of existing test assets before introducing new automation layers.
+Focus on regression safety: identify and close coverage gaps in the current test suite before expanding scope.
+Recommend phased modernization of test infrastructure rather than wholesale replacement.
+Emphasize transition paths from current automation state to target state with explicit milestones.
+Do not recommend building test frameworks from scratch when existing assets can be assessed and extended.

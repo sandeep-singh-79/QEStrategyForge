@@ -1,0 +1,6 @@
+Information is incomplete. Be explicit about every assumption you make and flag it clearly.
+In each strategy section, state which specific missing inputs affect the recommendation and how.
+Use conditional language throughout: frame recommendations as contingent on assumptions rather than definitive.
+Do not present default or inferred values as confirmed facts or settled decisions.
+Recommend discovery activities and information-gathering steps before committing to final strategy positions.
+Include a comprehensive assumptions register in the Assumptions, Gaps, And Open Questions section.

@@ -30,6 +30,26 @@ class CliTests(unittest.TestCase):
 
         self.assertNotEqual(ctx.exception.code, 0)
 
+    def test_build_parser_accepts_compare_flag(self) -> None:
+        parser = build_parser()
+
+        args = parser.parse_args([
+            "example.yaml",
+            "--mode", "llm_assisted",
+            "--assertions", "asserts.yaml",
+            "--output", "out.md",
+            "--compare", "compare.md",
+        ])
+
+        self.assertEqual(args.compare, "compare.md")
+
+    def test_build_parser_compare_is_none_by_default(self) -> None:
+        parser = build_parser()
+
+        args = parser.parse_args(["example.yaml"])
+
+        self.assertIsNone(args.compare)
+
 
 if __name__ == "__main__":
     unittest.main()
