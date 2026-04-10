@@ -29,8 +29,14 @@ In-progress analysis, temporary notes, open questions, and working context for t
 - Phase 5 complete
 - Phase 6 complete (2026-04-09)
 - Phase 7 complete (2026-04-09)
+- Phase 8 complete (2026-04-10)
 
 ## Deferred Items Log
+
+### Resolved in Phase 8 (no longer deferred)
+- ~~Prompt versioning not tracked~~ — prompts/v1/ directory with versioned .txt files
+- ~~Per-scenario prompt specialization~~ — 4 scenario templates + _select_scenario() priority chain
+- ~~Content-level benchmark assertions~~ — all 6 assertion files strengthened; 6/6 live tests pass at exit_code 0
 
 ### Resolved in Phase 7 (no longer deferred)
 - ~~CLI mode not wired to llm_flow~~ — fixed; cli.py is now the composition root
