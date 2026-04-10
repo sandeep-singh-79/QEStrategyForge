@@ -108,7 +108,7 @@ class LLMOutputRepairTests(unittest.TestCase):
         from ai_test_strategy_generator.output_validator import validate_output
 
         partial = "## Executive Summary\nSome incomplete content."
-        repaired = _repair_output(partial)
+        repaired, _ = _repair_output(partial)
         result = validate_output(repaired)
 
         self.assertTrue(
@@ -121,7 +121,7 @@ class LLMOutputRepairTests(unittest.TestCase):
         from ai_test_strategy_generator.output_validator import REQUIRED_LABELS
 
         partial = "## Executive Summary"
-        repaired = _repair_output(partial)
+        repaired, _ = _repair_output(partial)
 
         for label in REQUIRED_LABELS:
             self.assertIn(label, repaired, f"Repair did not add missing label: {label}")
@@ -135,7 +135,7 @@ class LLMOutputRepairTests(unittest.TestCase):
         resp = client.generate(GenerationRequest(prompt="x", model="fake"))
         already_valid = resp.text
 
-        repaired = _repair_output(already_valid)
+        repaired, _ = _repair_output(already_valid)
 
         for heading in REQUIRED_HEADINGS:
             count_before = already_valid.count(heading)
@@ -440,6 +440,94 @@ class LLMFlowRuntimeErrorFallbackTests(unittest.TestCase):
                                 msg=f"Fallback output invalid: {validation.errors}")
         finally:
             output_path.unlink(missing_ok=True)
+
+
+# ---------------------------------------------------------------------------
+# Phase 9: Repair edge case tests (B.3 line-anchored fix)
+# ---------------------------------------------------------------------------
+
+class LLMRepairEdgeCaseTests(unittest.TestCase):
+    """Tests for _repair_output() edge cases introduced with the line-anchored fix."""
+
+    def test_wrong_heading_level_is_not_mistaken_for_valid_heading(self) -> None:
+        """### Executive Summary must NOT satisfy the ## Executive Summary requirement."""
+        from ai_test_strategy_generator.llm_flow import _repair_output
+        from ai_test_strategy_generator.output_validator import validate_output
+
+        # LLM returned H3 for every heading instead of H2
+        fake_output = "\n".join(
+            f"### {heading.lstrip('# ')}" for heading in [
+                "Executive Summary", "Engagement Context",
+                "Quality Objectives And Risk Priorities", "Lifecycle Posture",
+                "Layered Test Strategy", "Test Types And Coverage Focus",
+                "Automation Strategy", "CI/CD And Quality Gates",
+                "Test Data Strategy", "Environment Strategy",
+                "Defect, Triage, And Reporting Model", "AI Usage Model",
+                "Assumptions, Gaps, And Open Questions", "Recommended Next Steps",
+            ]
+        )
+        repaired, _ = _repair_output(fake_output)
+
+        # After repair, all required headings must be present (line-level match)
+        result = validate_output(repaired)
+        self.assertTrue(
+            result.is_valid,
+            f"Repair failed to fix wrong heading level. Errors: {result.errors}",
+        )
+
+    def test_repair_does_not_overwrite_existing_label_values(self) -> None:
+        """If a label is already present (even with a value), repair must NOT append a duplicate."""
+        from ai_test_strategy_generator.llm_flow import _repair_output
+        from ai_test_strategy_generator.output_validator import REQUIRED_LABELS
+
+        # Build content that has every required label already present
+        label_lines = "\n".join(f"{label} already-set-value" for label in REQUIRED_LABELS)
+        full_content = _build_minimal_valid_content() + "\n" + label_lines
+
+        repaired, _ = _repair_output(full_content)
+
+        for label in REQUIRED_LABELS:
+            count = sum(1 for line in repaired.splitlines() if line.strip().startswith(label))
+            self.assertEqual(count, 1, f"Label {label!r} was duplicated after repair (count={count})")
+
+    def test_empty_llm_response_repair_produces_all_headings_and_labels(self) -> None:
+        """Completely empty LLM output → repair must inject ALL required headings and labels."""
+        from ai_test_strategy_generator.llm_flow import _repair_output
+        from ai_test_strategy_generator.output_validator import (
+            REQUIRED_HEADINGS,
+            REQUIRED_LABELS,
+            validate_output,
+        )
+
+        repaired, _ = _repair_output("")
+
+        result = validate_output(repaired)
+        self.assertTrue(result.is_valid, f"Repair of empty string is still invalid: {result.errors}")
+        for heading in REQUIRED_HEADINGS:
+            self.assertIn(heading, repaired, f"Missing heading after repair: {heading!r}")
+        for label in REQUIRED_LABELS:
+            self.assertTrue(
+                any(line.strip().startswith(label) for line in repaired.splitlines()),
+                f"Missing label after repair: {label!r}",
+            )
+
+    def test_content_wrapped_in_code_fence_still_gets_missing_headings_appended(self) -> None:
+        """Output wrapped in a markdown code fence should still receive missing headings."""
+        from ai_test_strategy_generator.llm_flow import _repair_output
+        from ai_test_strategy_generator.output_validator import validate_output
+
+        fenced = "```markdown\n## Executive Summary\nSome content.\n```"
+        repaired, _ = _repair_output(fenced)
+
+        # Repair appends outside the fence; validate_output uses substring search, so it passes
+        result = validate_output(repaired)
+        self.assertTrue(result.is_valid, f"After repair: {result.errors}")
+
+
+def _build_minimal_valid_content() -> str:
+    """Return markdown with all required headings but no label lines."""
+    from ai_test_strategy_generator.output_validator import REQUIRED_HEADINGS
+    return "\n\n".join(f"{h}\nContent." for h in REQUIRED_HEADINGS)
 
 
 if __name__ == "__main__":

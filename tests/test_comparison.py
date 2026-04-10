@@ -71,6 +71,33 @@ class ComparisonReportTests(unittest.TestCase):
         self.assertIn(det_lines, report)
         self.assertIn(llm_lines, report)
 
+    def test_quality_indicators_table_present_when_repair_stats_provided(self) -> None:
+        from ai_test_strategy_generator.comparison import build_comparison_report
+
+        stats = {
+            "total_headings": 10,
+            "headings_injected": 2,
+            "total_labels": 8,
+            "labels_injected": 1,
+        }
+        report = build_comparison_report("my-input.yaml", self._DET, self._LLM, repair_stats=stats)
+
+        self.assertIn("## Quality Indicators", report)
+        self.assertIn("Headings from LLM", report)
+        self.assertIn("8 / 10", report)
+        self.assertIn("Labels from LLM", report)
+        self.assertIn("7 / 8", report)
+        self.assertIn("Headings injected by repair", report)
+        self.assertIn("Labels injected by repair", report)
+
+    def test_quality_indicators_table_absent_when_repair_stats_omitted(self) -> None:
+        from ai_test_strategy_generator.comparison import build_comparison_report
+
+        report = build_comparison_report("my-input.yaml", self._DET, self._LLM)
+
+        self.assertNotIn("## Quality Indicators", report)
+        self.assertNotIn("Headings from LLM", report)
+
 
 if __name__ == "__main__":
     unittest.main()

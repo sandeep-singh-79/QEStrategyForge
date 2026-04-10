@@ -23,3 +23,11 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 ai_test_strategy_generator = ["prompts/**/*.txt"]
+
+[tool.pytest.ini_options]
+addopts = "-k 'not live'"
+markers = [
+    "live: requires a live LLM provider (e.g. Ollama); excluded from default test runs",
+    "benchmark: end-to-end benchmark scenario test",
+]
+

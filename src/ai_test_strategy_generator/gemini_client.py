@@ -25,7 +25,17 @@ class GeminiClient:
             )
         self._config = config
 
+    def __repr__(self) -> str:
+        return (
+            f"GeminiClient(provider={self._config.provider!r}, "
+            f"model={self._config.model!r}, "
+            f"base_url={self._config.base_url!r}, "
+            f"api_key=***)"
+        )
+
     def _build_url(self, model: str) -> str:
+        # Google Gemini REST API requires the key as a query parameter.
+        # Do NOT log or include this URL in error messages — it contains the API key.
         base = self._config.base_url.rstrip("/")
         return (
             f"{base}/v1beta/models/{model}:generateContent"
@@ -49,15 +59,15 @@ class GeminiClient:
             method="POST",
         )
         try:
-            with urllib.request.urlopen(req) as resp:
+            with urllib.request.urlopen(req, timeout=300) as resp:
                 raw = resp.read()
         except urllib.error.HTTPError as exc:
             raise RuntimeError(
                 f"Gemini API returned HTTP {exc.code}: {exc.msg}"
             ) from exc
-        except urllib.error.URLError as exc:
+        except (urllib.error.URLError, TimeoutError, OSError) as exc:
             raise RuntimeError(
-                f"Gemini request failed: {exc.reason}"
+                f"Gemini request failed: {exc}"
             ) from exc
 
         try:

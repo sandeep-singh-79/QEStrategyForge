@@ -8,6 +8,7 @@ def build_comparison_report(
     input_description: str,
     deterministic_markdown: str,
     llm_markdown: str,
+    repair_stats: dict[str, object] | None = None,
 ) -> str:
     """Generate a markdown side-by-side comparison of deterministic vs LLM output."""
     det_lines = deterministic_markdown.splitlines()
@@ -30,6 +31,28 @@ def build_comparison_report(
         f"| Word Count | {_word_count(deterministic_markdown)} | {_word_count(llm_markdown)} |",
         f"| Sections | {det_sections} | {llm_sections} |",
         "",
+    ]
+
+    if repair_stats is not None:
+        total_headings = int(repair_stats.get("total_headings", 0))
+        headings_injected = int(repair_stats.get("headings_injected", 0))
+        total_labels = int(repair_stats.get("total_labels", 0))
+        labels_injected = int(repair_stats.get("labels_injected", 0))
+        headings_from_llm = total_headings - headings_injected
+        labels_from_llm = total_labels - labels_injected
+        report_lines += [
+            "## Quality Indicators",
+            "",
+            "| Metric | Value |",
+            "|---|---|",
+            f"| Headings from LLM | {headings_from_llm} / {total_headings} |",
+            f"| Headings injected by repair | {headings_injected} |",
+            f"| Labels from LLM | {labels_from_llm} / {total_labels} |",
+            f"| Labels injected by repair | {labels_injected} |",
+            "",
+        ]
+
+    report_lines += [
         "---",
         "",
         "## Deterministic Strategy",
