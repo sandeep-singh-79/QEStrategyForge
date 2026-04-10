@@ -96,6 +96,27 @@ python -m ai_test_strategy_generator.cli --artifact-folder benchmarks\artifact-g
 
 Fallback behaviour: if the LLM call fails or produces invalid output, the system automatically falls back to the deterministic renderer and exits with code `3`.
 
+## Compare Deterministic vs LLM-Assisted Output
+
+The `--compare` flag runs both generation paths and writes a side-by-side markdown comparison report.
+
+It only applies in `llm_assisted` mode. Pass a path for the comparison file:
+
+```powershell
+python -m ai_test_strategy_generator.cli benchmarks\brownfield-partial-automation.input.yaml `
+  --mode llm_assisted --provider ollama --model glm-5:cloud `
+  --assertions benchmarks\brownfield-partial-automation.assertions.yaml `
+  --output output\strategy-llm.md `
+  --compare output\comparison.md
+```
+
+The comparison report includes:
+- Summary table: output lines, word count, section count for both paths
+- Full deterministic strategy output
+- Full LLM-assisted strategy output
+
+This is the recommended way to evaluate whether a prompt template change improved LLM output quality.
+
 ## Provider Configuration
 
 Provider settings resolve in this order (later wins):
@@ -123,7 +144,7 @@ Full suite (excluding live provider tests):
 
 ```powershell
 $env:PYTHONPATH='src'
-python -m pytest tests/ --ignore=tests/test_live_ollama.py -q
+python -m pytest tests/ -k "not live" -q
 ```
 
 All tests including live (requires a running Ollama instance):
@@ -138,7 +159,7 @@ Live tests only:
 python -m pytest tests/test_live_ollama.py -v
 ```
 
-Expected baseline: 240 non-live tests passing. Live tests auto-skip when Ollama is unreachable.
+Expected baseline: 268 non-live tests passing, 6 live Ollama benchmarks passing. Live tests auto-skip when Ollama is unreachable.
 
 ## Benchmark Execution Flow
 
@@ -146,17 +167,20 @@ The end-to-end benchmark flows are exercised through:
 - `tests/test_end_to_end_flow.py` — deterministic YAML input path
 - `tests/test_artifact_end_to_end_flow.py` — deterministic artifact folder path
 - `tests/test_benchmark_runner.py` — assertion runner unit tests
-- `tests/test_live_ollama.py` — live LLM path end-to-end
+- `tests/test_live_ollama.py` — live LLM path end-to-end (6 scenarios)
 
 The benchmark flow performs:
 1. Input load (YAML file or artifact folder)
 2. Input validation
-3. Context classification
-4. Rule application (deterministic) or LLM synthesis (LLM-assisted)
-5. Markdown render + repair pass on invalid output
-6. Structural output validation
-7. Benchmark assertion checks
-8. Output write to a file path (if `--output` given)
+3. Context classification (6 dimensions)
+4. Rule application — 9 decision keys
+5. Prompt build: scenario template selected from `prompts/v1/` based on classification; base template assembled with engagement context, classifications, decisions, and output contract
+6. LLM synthesis (LLM-assisted) or deterministic renderer (deterministic)
+7. Structural output validation (14 required headings, 18 required labels)
+8. Context-aware repair pass on invalid output — injects actual input and decision values
+9. Deterministic fallback if repair still fails
+10. Benchmark assertion checks (structural + content-level)
+11. Output write to file path (if `--output` given)
 
 ## Deterministic Validation Flow
 
@@ -203,11 +227,9 @@ This keeps the output structured without overcomplicating the MVP.
 
 Not included yet:
 - live integration tests for OpenAI and Gemini providers (Ollama validated; others implemented but not live-tested)
-- prompt versioning and per-scenario prompt specialization
 - `.pdf`, `.docx`, `.xlsx` artifact readers (markdown, YAML, and JSON supported)
 - Jira / Xray / Zephyr / Confluence connectors
 - arbitrary RFP parsing
-- content-level benchmark assertions on real LLM output
 - UI
 - multi-agent orchestration
 
@@ -219,6 +241,7 @@ Not included yet:
 | Phase 5 | Artifact-folder ingestion (manifest, loader, `.md/.yaml/.json` readers, mapping, merge, artifact-brownfield benchmark) |
 | Phase 6 | Bounded LLM integration (prompt builder, LLMClient Protocol, FakeLLMClient, llm_flow, repair pass, CLI `--mode` flag) |
 | Phase 7 | Real provider clients (Ollama, OpenAI, Gemini), client factory, config loader, ProviderConfig, CLI composition root, live Ollama tests, artifact-greenfield benchmark, 100% coverage on artifact modules |
+| Phase 8 | Versioned prompt templates (`prompts/v1/`), per-scenario specialization (greenfield, brownfield, compliance-heavy, incomplete-context), strengthened content-level benchmark assertions, context-aware repair, `--compare` CLI flag, 6/6 live benchmarks passing |
 
 ## Development Workflow Files
 
