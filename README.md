@@ -133,12 +133,15 @@ CLI flags (`--provider`, `--model`, `--base-url`, `--temperature`, `--max-tokens
 
 ## Development Status
 
-As of Phase 7 (2026-04-09):
-- 240 non-live automated tests passing
-- Live Ollama integration validated with `glm-5:cloud`
+As of Phase 9 (2026-04-10):
+- 287 non-live automated tests passing; 6 live Ollama benchmark tests passing
+- Live Ollama integration validated with `glm-5:cloud` across all benchmark scenarios
 - OpenAI-compatible and Gemini clients implemented (live tests deferred)
 - Artifact-folder ingestion: 100% statement coverage
-- All four benchmark scenarios pass deterministically; artifact-brownfield and artifact-greenfield pass end-to-end
+- All benchmark scenarios pass deterministically and in LLM-assisted mode
+- `FlowResult` contract with typed exit codes across all flow paths
+- Repair statistics tracked per run and surfaced in `--compare` Quality Indicators table
+- Structured logging at all LLM decision points via Python standard `logging`
 
 ## Publishing Notes
 

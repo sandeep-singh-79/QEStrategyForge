@@ -56,12 +56,13 @@
 | T33 - Phase 6 Build | Deliver all 7 Phase 6 slices (mode contract through hardening) | Complete | 128 tests green; new modules: prompt_builder, llm_client, llm_flow |
 | T34 - Phase 7 Build | Deliver all 9 Phase 7 slices (real providers, CLI composition root, live tests, coverage hardening) | Complete | 240 tests green + 2 live; new modules: config_loader, ollama_client, openai_client, gemini_client, client_factory; cli.py rewritten as composition root; RuntimeError fallback fixed; glm-5:cloud live validated |
 | T35 - Phase 8 Build | Deliver all 6 Phase 8 slices (prompt engineering, scenario templates, content assertions, --compare) | Complete | 268 tests green + 6 live; prompts/v1/ templates; scenario selection; REQUIRED_LABELS expanded to 18; context-aware repair; comparison.py + --compare CLI flag |
+| T36 - Phase 9 Build | Deliver all 13 Phase 9 slices (hardening: FlowResult, logging, repair fix, test infra, contract tests, repair stats) | Complete | 287 tests green + 6 live; FlowResult/EXIT_*/make_flow_result(); structured logging; line-anchored repair; repair_stats in FlowResult; Quality Indicators in comparison.py |
 
 ---
 
 ## Immediate Next Actions
 
-1. Decide Phase 9 focus: Karpathy-style prompt optimization loop (now feasible), OR live tests for OpenAI/Gemini, OR extended artifact types
+1. Decide Phase 10 focus: Karpathy-style prompt optimization loop, OR live tests for OpenAI/Gemini, OR extended artifact types, OR CODEX.md reference
 2. If prompt optimization: set up automated benchmark runner that saves comparison reports and iterates templates
 3. If live provider coverage: add `tests/test_live_openai.py` and `tests/test_live_gemini.py` mirroring the live Ollama pattern
 4. Continue TDD + deterministic validation for every new slice

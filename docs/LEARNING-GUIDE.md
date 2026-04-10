@@ -280,6 +280,7 @@ For a deeper treatment — template anatomy, output contract design, repair mech
 11. Use `--compare` to evaluate scenario-template quality:
 - run the `greenfield-low-automation` benchmark with `--mode llm_assisted` and `--compare compare.md`
 - open `compare.md` and compare word count, section count, and narrative depth between deterministic and LLM-assisted
+- read the **Quality Indicators** table: note `headings_injected` and `labels_injected` — these tell you how much the LLM relied on the repair safety net
 - identify two things the LLM added that the deterministic renderer could not
 - identify one thing the deterministic renderer produced that the LLM got wrong or skipped
 
@@ -288,6 +289,13 @@ For a deeper treatment — template anatomy, output contract design, repair mech
 - understand how it uses actual input values and decision values (not generic placeholders)
 - understand the conditional logic for `Brownfield Transition Strategy:` — it is only injected when `brownfield_transition_strategy != not_applicable`
 - explain in plain language why a repair-injected strategy is still more useful than generic fallback text
+
+13. Interpret the Quality Indicators table in a comparison report:
+- run two benchmarks in LLM-assisted mode with `--compare` and save the reports: `brownfield-partial-automation` and `incomplete-context`
+- for each report, read the Quality Indicators table
+- compare `headings_injected` and `labels_injected` between the two
+- a larger injection count means the scenario template is under-instructing the LLM for that engagement type
+- explain in one sentence what a prompt engineer should do differently for the scenario with the higher injection count
 
 ## Expected Learning Outcome
 
