@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import random
 import re
+from collections.abc import Callable
 
 
 # ---------------------------------------------------------------------------
@@ -135,7 +136,9 @@ def example_removal(template: str) -> tuple[str, str]:
 # Registry
 # ---------------------------------------------------------------------------
 
-ALL_MUTATIONS: dict[str, object] = {
+MutationFn = Callable[[str], tuple[str, str]]
+
+ALL_MUTATIONS: dict[str, MutationFn] = {
     "emphasis_strengthening": emphasis_strengthening,
     "emphasis_removal": emphasis_removal,
     "instruction_reordering": instruction_reordering,
@@ -158,4 +161,4 @@ def apply_mutation(template: str, strategy_name: str) -> tuple[str, str]:
         If ``strategy_name`` is not in ALL_MUTATIONS.
     """
     fn = ALL_MUTATIONS[strategy_name]
-    return fn(template)  # type: ignore[call-arg,return-value]
+    return fn(template)

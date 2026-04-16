@@ -8,10 +8,10 @@ import shutil
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from ai_test_strategy_generator.llm_client import FakeLLMClient
-from ai_test_strategy_generator.models import EXIT_SUCCESS, LLMConfig, ValidationResult
+from ai_test_strategy_generator.models import LLMConfig
 from ai_test_strategy_generator.prompt_optimizer import (
     BenchmarkSpec,
     IterationRecord,
@@ -22,7 +22,6 @@ from ai_test_strategy_generator.prompt_optimizer import (
 
 _BENCHMARKS_DIR = Path("benchmarks")
 _FAKE_CONFIG = LLMConfig(model="fake")
-_FAKE_CLIENT = FakeLLMClient()
 
 # ---------------------------------------------------------------------------
 # BenchmarkSpec
@@ -118,25 +117,6 @@ class OptimizationResultTests(unittest.TestCase):
 # run_optimization_loop — functional tests with mocked LLM flow
 # ---------------------------------------------------------------------------
 
-def _make_fake_flow_result(score: int = 30) -> dict:
-    """Return a FlowResult dict that will yield `score` points from scorer."""
-    # exit_code=0 (+1), source='llm' (+1), headings_injected=0/total=14 (+14), labels same (+18)
-    # We control assertions via ValidationResult mock separately
-    return {
-        "success": True,
-        "exit_code": EXIT_SUCCESS,
-        "validation_errors": [],
-        "assertion_errors": [],
-        "output_path": "fake_output.md",
-        "repair_stats": {
-            "source": "llm",
-            "headings_injected": 0,
-            "total_headings": 14,
-            "labels_injected": 0,
-            "total_labels": 18,
-        },
-    }
-
 
 class RunOptimizationLoopTests(unittest.TestCase):
 
@@ -149,6 +129,7 @@ class RunOptimizationLoopTests(unittest.TestCase):
             encoding="utf-8",
         )
         self._output_dir = Path(self._tmpdir) / "opt_runs"
+        self._llm_client = FakeLLMClient()
         self._specs = [
             BenchmarkSpec(
                 _BENCHMARKS_DIR / "brownfield-partial-automation.input.yaml",
@@ -180,19 +161,19 @@ class RunOptimizationLoopTests(unittest.TestCase):
 
     def test_raises_on_empty_specs(self) -> None:
         with self.assertRaises(ValueError):
-            run_optimization_loop([], _FAKE_CONFIG, _FAKE_CLIENT, self._config)
+            run_optimization_loop([], _FAKE_CONFIG, FakeLLMClient(), self._config)
 
     def test_returns_optimization_result(self) -> None:
         with self._patch_score_iteration([20, 22]):
             result = run_optimization_loop(
-                self._specs, _FAKE_CONFIG, _FAKE_CLIENT, self._config
+                self._specs, _FAKE_CONFIG, self._llm_client, self._config
             )
         self.assertIsInstance(result, OptimizationResult)
 
     def test_improvement_detected(self) -> None:
         with self._patch_score_iteration([20, 22]):
             result = run_optimization_loop(
-                self._specs, _FAKE_CONFIG, _FAKE_CLIENT, self._config
+                self._specs, _FAKE_CONFIG, self._llm_client, self._config
             )
         self.assertTrue(result.improved())
         self.assertEqual(result.improvement_delta, 2)
@@ -201,7 +182,7 @@ class RunOptimizationLoopTests(unittest.TestCase):
     def test_no_improvement_detected(self) -> None:
         with self._patch_score_iteration([20, 18]):
             result = run_optimization_loop(
-                self._specs, _FAKE_CONFIG, _FAKE_CLIENT, self._config
+                self._specs, _FAKE_CONFIG, self._llm_client, self._config
             )
         self.assertFalse(result.improved())
         self.assertEqual(result.improvement_delta, 0)
@@ -210,7 +191,7 @@ class RunOptimizationLoopTests(unittest.TestCase):
     def test_records_length_equals_n_iterations(self) -> None:
         with self._patch_score_iteration([10, 12]):
             result = run_optimization_loop(
-                self._specs, _FAKE_CONFIG, _FAKE_CLIENT, self._config
+                self._specs, _FAKE_CONFIG, self._llm_client, self._config
             )
         # n_iterations=2 means iter 0 (baseline) + iter 1 = 2 records
         self.assertEqual(len(result.records), 2)
@@ -218,21 +199,21 @@ class RunOptimizationLoopTests(unittest.TestCase):
     def test_baseline_record_has_no_mutation(self) -> None:
         with self._patch_score_iteration([10, 12]):
             result = run_optimization_loop(
-                self._specs, _FAKE_CONFIG, _FAKE_CLIENT, self._config
+                self._specs, _FAKE_CONFIG, self._llm_client, self._config
             )
         self.assertIsNone(result.records[0].mutation_strategy)
 
     def test_iteration_1_has_mutation_strategy(self) -> None:
         with self._patch_score_iteration([10, 12]):
             result = run_optimization_loop(
-                self._specs, _FAKE_CONFIG, _FAKE_CLIENT, self._config
+                self._specs, _FAKE_CONFIG, self._llm_client, self._config
             )
         self.assertEqual(result.records[1].mutation_strategy, "emphasis_strengthening")
 
     def test_output_dir_iter_0_created(self) -> None:
         with self._patch_score_iteration([10, 12]):
             result = run_optimization_loop(
-                self._specs, _FAKE_CONFIG, _FAKE_CLIENT, self._config,
+                self._specs, _FAKE_CONFIG, self._llm_client, self._config,
                 output_dir=self._output_dir,
             )
         self.assertTrue((self._output_dir / "iter_0").exists())
@@ -240,7 +221,7 @@ class RunOptimizationLoopTests(unittest.TestCase):
     def test_winner_saved_to_best_dir(self) -> None:
         with self._patch_score_iteration([10, 15]):
             result = run_optimization_loop(
-                self._specs, _FAKE_CONFIG, _FAKE_CLIENT, self._config,
+                self._specs, _FAKE_CONFIG, self._llm_client, self._config,
                 output_dir=self._output_dir,
             )
         self.assertIsNotNone(result.best_prompt_dir)
@@ -249,16 +230,13 @@ class RunOptimizationLoopTests(unittest.TestCase):
     def test_no_winner_dir_when_no_improvement(self) -> None:
         with self._patch_score_iteration([10, 10]):
             result = run_optimization_loop(
-                self._specs, _FAKE_CONFIG, _FAKE_CLIENT, self._config,
+                self._specs, _FAKE_CONFIG, self._llm_client, self._config,
                 output_dir=self._output_dir,
             )
         self.assertIsNone(result.best_prompt_dir)
         self.assertFalse((self._output_dir / "best").exists())
 
     def test_timed_out_iteration_scores_zero(self) -> None:
-        iter_0_scores = ([10], False)
-        iter_1_scores = ([5], True)  # timed out
-
         call_count = {"n": 0}
         def fake_score_iteration(templates, specs, llm_config, llm_client, timeout):
             idx = min(call_count["n"], 1)
@@ -270,11 +248,50 @@ class RunOptimizationLoopTests(unittest.TestCase):
             side_effect=fake_score_iteration,
         ):
             result = run_optimization_loop(
-                self._specs, _FAKE_CONFIG, _FAKE_CLIENT, self._config
+                self._specs, _FAKE_CONFIG, self._llm_client, self._config
             )
 
         self.assertTrue(result.records[1].timed_out)
         self.assertFalse(result.improved())
+
+    def test_n_iterations_1_runs_baseline_only(self) -> None:
+        """n_iterations=1 means range(1,1) is empty — only baseline record exists."""
+        config = OptimizationConfig(
+            prompt_dir=self._prompt_dir,
+            mutations=["emphasis_strengthening"],
+            n_iterations=1,
+        )
+        with self._patch_score_iteration([15]):
+            result = run_optimization_loop(
+                self._specs, _FAKE_CONFIG, self._llm_client, config
+            )
+
+        self.assertEqual(len(result.records), 1)
+        self.assertIsNone(result.records[0].mutation_strategy)
+        self.assertTrue(result.records[0].is_best)
+        self.assertEqual(result.best_iteration, 0)
+        self.assertFalse(result.improved())
+
+    def test_mutations_cycle_when_iterations_exceed_mutation_count(self) -> None:
+        """With 4 iterations and 2 mutations, mutations cycle:
+        iter1→mut[0], iter2→mut[1], iter3→mut[0].
+        """
+        config = OptimizationConfig(
+            prompt_dir=self._prompt_dir,
+            mutations=["emphasis_strengthening", "instruction_reordering"],
+            n_iterations=4,
+        )
+        with self._patch_score_iteration([10, 10, 10, 10]):
+            result = run_optimization_loop(
+                self._specs, _FAKE_CONFIG, self._llm_client, config
+            )
+
+        strategies = [r.mutation_strategy for r in result.records if r.mutation_strategy]
+        self.assertEqual(strategies, [
+            "emphasis_strengthening",
+            "instruction_reordering",
+            "emphasis_strengthening",
+        ])
 
 
 if __name__ == "__main__":

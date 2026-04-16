@@ -20,6 +20,12 @@ from ai_test_strategy_generator.llm_flow import (
 )
 from ai_test_strategy_generator.main import run_validation
 from ai_test_strategy_generator.models import LLMConfig, ProviderConfig
+from ai_test_strategy_generator.llm_client import LLMClient
+from ai_test_strategy_generator.prompt_optimizer import (
+    BenchmarkSpec,
+    OptimizationConfig,
+    run_optimization_loop,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -255,20 +261,9 @@ def _write_comparison(
 def _run_optimization(
     args: argparse.Namespace,
     llm_config: LLMConfig,
-    llm_client: object,
+    llm_client: LLMClient,
 ) -> int:
     """Run the Karpathy optimization loop and return an exit code."""
-    from ai_test_strategy_generator.prompt_mutations import ALL_MUTATIONS
-    from ai_test_strategy_generator.prompt_optimizer import (
-        BenchmarkSpec,
-        OptimizationConfig,
-        run_optimization_loop,
-    )
-
-    # Collect benchmark specs from positional args or --assertions pairs.
-    # Convention: pass one or more "input:assertions" pairs via --assertions
-    # when running --optimize, or pass a single input+assertions as normal.
-    # For simplicity the CLI reuses --assertions as a single-scenario shortcut.
     if not args.assertions:
         print("ERROR: --optimize requires --assertions <path>", file=sys.stderr)
         return 1
@@ -277,7 +272,6 @@ def _run_optimization(
         return 1
 
     specs = [BenchmarkSpec(args.input_file, args.assertions)]
-
     prompt_dir = Path(__file__).parent / "prompts" / "v1"
 
     output_dir: Path | None = None
@@ -286,13 +280,9 @@ def _run_optimization(
         output_dir = Path(args.optimize_output_dir) / f"run_{ts}"
         output_dir.mkdir(parents=True, exist_ok=True)
 
-    mutations = [m for m in ALL_MUTATIONS if m in (
-        "emphasis_strengthening", "instruction_reordering", "example_injection"
-    )]
-
+    # Use OptimizationConfig default mutations — no need to duplicate them here.
     opt_config = OptimizationConfig(
         prompt_dir=prompt_dir,
-        mutations=mutations,
         n_iterations=args.optimize_iterations,
         timeout_per_iter=args.optimize_timeout,
     )
@@ -300,13 +290,14 @@ def _run_optimization(
     result = run_optimization_loop(specs, llm_config, llm_client, opt_config, output_dir)
     print(result.summary())
 
-    if result.improved() and output_dir:
-        # Write scoreboard YAML
+    if output_dir:
+        # Always write scoreboard for audit, regardless of whether score improved.
         scoreboard = {
             "baseline_aggregate": result.baseline_aggregate,
             "best_aggregate": result.best_aggregate,
             "best_iteration": result.best_iteration,
             "improvement_delta": result.improvement_delta,
+            "improved": result.improved(),
             "iterations": [
                 {
                     "iteration": r.iteration,
@@ -325,10 +316,11 @@ def _run_optimization(
             encoding="utf-8",
         )
         print(f"Scoreboard saved to {output_dir / 'scoreboard.yaml'}")
-        print(
-            f"\nTo promote the winner, copy {result.best_prompt_dir} to "
-            f"src/ai_test_strategy_generator/prompts/v2/ and update "
-            f"prompt_builder.py to use version='v2'."
-        )
+        if result.improved():
+            print(
+                f"\nTo promote the winner, copy {result.best_prompt_dir} to "
+                f"src/ai_test_strategy_generator/prompts/v2/ and update "
+                f"prompt_builder.py to use version='v2'."
+            )
 
     return 0
