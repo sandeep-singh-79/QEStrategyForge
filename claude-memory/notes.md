@@ -21,8 +21,8 @@ In-progress analysis, temporary notes, open questions, and working context for t
 - Resolved: prompt versioning → prompts/v1/ directory. Completed in Phase 8.
 - Resolved: comparison report → --compare CLI flag. Completed in Phase 8.
 - Resolved: Phase 10 direction → Karpathy optimization loop. Decision made 2026-04-16.
-- Open: should prompt mutation also modify scenario templates, or only base.txt?
-- Open: what is the minimum number of optimization iterations needed to demonstrate improvement?
+- Open: should prompt mutation also modify scenario templates, or only base.txt? → Decided: base.txt only for Phase 10. Scenario templates unchanged.
+- Closed: Phase 10 complete 2026-04-16. 342 tests. Commit 77e492d.
 
 ## Phase Status Snapshot
 - Phase 1 complete
@@ -34,7 +34,8 @@ In-progress analysis, temporary notes, open questions, and working context for t
 - Phase 7 complete (2026-04-09)
 - Phase 8 complete (2026-04-10)
 - Phase 9 complete (2026-04-10)
-- Phase 10 in progress (2026-04-16) — Karpathy optimization loop
+- Phase 10 complete (2026-04-16) — Karpathy optimization loop, 342 tests, commit 77e492d
+- Next: merge to master, initialize intelligent-regression-optimizer repo
 
 ## Deferred Items Log
 
