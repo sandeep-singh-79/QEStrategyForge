@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import argparse
+import datetime
 import os
 import sys
 import tempfile
 from pathlib import Path
+
+import yaml
 
 from ai_test_strategy_generator.artifact_end_to_end_flow import run_artifact_benchmark_flow
 from ai_test_strategy_generator.client_factory import create_llm_client
@@ -91,6 +94,33 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="COMPARE_FILE",
         help="Generate a deterministic-vs-LLM comparison report saved to this .md path.",
     )
+    parser.add_argument(
+        "--optimize",
+        action="store_true",
+        default=False,
+        help="Run the Karpathy-style prompt optimization loop instead of single generation.",
+    )
+    parser.add_argument(
+        "--optimize-iterations",
+        dest="optimize_iterations",
+        type=int,
+        default=5,
+        help="Number of optimization iterations (default: 5). Used with --optimize.",
+    )
+    parser.add_argument(
+        "--optimize-timeout",
+        dest="optimize_timeout",
+        type=int,
+        default=300,
+        help="Wall-clock timeout in seconds per iteration (default: 300). Used with --optimize.",
+    )
+    parser.add_argument(
+        "--optimize-output-dir",
+        dest="optimize_output_dir",
+        default=None,
+        metavar="DIR",
+        help="Directory to save optimization run artefacts (scoreboard, prompt snapshots).",
+    )
     return parser
 
 
@@ -165,6 +195,9 @@ def main() -> None:
             temperature=provider_config.temperature,
         )
 
+        if args.optimize:
+            raise SystemExit(_run_optimization(args, llm_config, llm_client))
+
         if has_artifact:
             result = run_llm_artifact_benchmark_flow(
                 args.artifact_folder, args.assertions, args.output, llm_config, llm_client
@@ -175,7 +208,7 @@ def main() -> None:
             )
 
         if args.compare and result["exit_code"] in (0, 4):
-            _write_comparison(args, has_artifact, llm_config, result["output_path"])
+            _write_comparison(args, has_artifact, llm_config, result["output_path"], result.get("repair_stats"))
     else:
         # deterministic
         if has_artifact:
@@ -193,6 +226,7 @@ def _write_comparison(
     has_artifact: bool,
     llm_config: LLMConfig,
     llm_output_path: str,
+    repair_stats: dict[str, object] | None = None,
 ) -> None:
     """Run the deterministic flow and write a side-by-side comparison report."""
     with tempfile.NamedTemporaryFile(suffix=".md", delete=False) as f:
@@ -211,8 +245,90 @@ def _write_comparison(
     llm_markdown = llm_path.read_text(encoding="utf-8") if llm_path.exists() else ""
 
     input_description = args.artifact_folder if has_artifact else args.input_file
-    report = build_comparison_report(input_description, det_markdown, llm_markdown)
+    report = build_comparison_report(input_description, det_markdown, llm_markdown, repair_stats=repair_stats)
 
     compare_path = Path(args.compare)
     compare_path.parent.mkdir(parents=True, exist_ok=True)
     compare_path.write_text(report, encoding="utf-8")
+
+
+def _run_optimization(
+    args: argparse.Namespace,
+    llm_config: LLMConfig,
+    llm_client: object,
+) -> int:
+    """Run the Karpathy optimization loop and return an exit code."""
+    from ai_test_strategy_generator.prompt_mutations import ALL_MUTATIONS
+    from ai_test_strategy_generator.prompt_optimizer import (
+        BenchmarkSpec,
+        OptimizationConfig,
+        run_optimization_loop,
+    )
+
+    # Collect benchmark specs from positional args or --assertions pairs.
+    # Convention: pass one or more "input:assertions" pairs via --assertions
+    # when running --optimize, or pass a single input+assertions as normal.
+    # For simplicity the CLI reuses --assertions as a single-scenario shortcut.
+    if not args.assertions:
+        print("ERROR: --optimize requires --assertions <path>", file=sys.stderr)
+        return 1
+    if not args.input_file:
+        print("ERROR: --optimize requires an input_file", file=sys.stderr)
+        return 1
+
+    specs = [BenchmarkSpec(args.input_file, args.assertions)]
+
+    prompt_dir = Path(__file__).parent / "prompts" / "v1"
+
+    output_dir: Path | None = None
+    if args.optimize_output_dir:
+        ts = datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+        output_dir = Path(args.optimize_output_dir) / f"run_{ts}"
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+    mutations = [m for m in ALL_MUTATIONS if m in (
+        "emphasis_strengthening", "instruction_reordering", "example_injection"
+    )]
+
+    opt_config = OptimizationConfig(
+        prompt_dir=prompt_dir,
+        mutations=mutations,
+        n_iterations=args.optimize_iterations,
+        timeout_per_iter=args.optimize_timeout,
+    )
+
+    result = run_optimization_loop(specs, llm_config, llm_client, opt_config, output_dir)
+    print(result.summary())
+
+    if result.improved() and output_dir:
+        # Write scoreboard YAML
+        scoreboard = {
+            "baseline_aggregate": result.baseline_aggregate,
+            "best_aggregate": result.best_aggregate,
+            "best_iteration": result.best_iteration,
+            "improvement_delta": result.improvement_delta,
+            "iterations": [
+                {
+                    "iteration": r.iteration,
+                    "mutation_strategy": r.mutation_strategy,
+                    "mutation_description": r.mutation_description,
+                    "per_benchmark_scores": r.per_benchmark_scores,
+                    "aggregate": r.aggregate,
+                    "is_best": r.is_best,
+                    "timed_out": r.timed_out,
+                }
+                for r in result.records
+            ],
+        }
+        (output_dir / "scoreboard.yaml").write_text(
+            yaml.dump(scoreboard, default_flow_style=False, sort_keys=False),
+            encoding="utf-8",
+        )
+        print(f"Scoreboard saved to {output_dir / 'scoreboard.yaml'}")
+        print(
+            f"\nTo promote the winner, copy {result.best_prompt_dir} to "
+            f"src/ai_test_strategy_generator/prompts/v2/ and update "
+            f"prompt_builder.py to use version='v2'."
+        )
+
+    return 0

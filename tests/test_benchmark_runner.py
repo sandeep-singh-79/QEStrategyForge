@@ -90,6 +90,54 @@ class BenchmarkRunnerTests(unittest.TestCase):
         with self.assertRaises(AssertionLoadError):
             run_assertions("## Executive Summary\n", assertions_file)
 
+    # ------------------------------------------------------------------
+    # Phase 10 — total_checks population
+    # ------------------------------------------------------------------
+
+    def test_total_checks_counts_all_assertion_types(self) -> None:
+        from ai_test_strategy_generator.benchmark_runner import run_assertions
+
+        assertions_file = self.make_assertions_file(
+            "\n".join([
+                "must_include_headings:",
+                '  - "## Executive Summary"',
+                '  - "## Risk"',
+                "must_include_labels:",
+                '  - "Project Posture: brownfield"',
+                "must_include_substrings:",
+                '  - "Missing Information:"',
+                "must_not_include_substrings:",
+                '  - "forbidden-term"',
+            ])
+        )
+        markdown = "## Executive Summary\n## Risk\nProject Posture: brownfield\nMissing Information: yes\n"
+
+        result = run_assertions(markdown, assertions_file)
+
+        # 2 headings + 1 label + 1 substring + 1 exclusion = 5
+        self.assertEqual(result.total_checks, 5)
+        self.assertTrue(result.is_valid)
+
+    def test_total_checks_is_zero_for_empty_assertions(self) -> None:
+        from ai_test_strategy_generator.benchmark_runner import run_assertions
+
+        assertions_file = self.make_assertions_file("{}")
+        result = run_assertions("any markdown content\n", assertions_file)
+
+        self.assertEqual(result.total_checks, 0)
+
+    def test_total_checks_populated_even_on_failure(self) -> None:
+        from ai_test_strategy_generator.benchmark_runner import run_assertions
+
+        assertions_file = self.make_assertions_file(
+            "must_include_headings:\n  - '## Missing'\nmust_include_labels:\n  - 'Label: X'\n"
+        )
+        result = run_assertions("no relevant content\n", assertions_file)
+
+        self.assertFalse(result.is_valid)
+        # 1 heading + 1 label = 2 total checks
+        self.assertEqual(result.total_checks, 2)
+
 
 if __name__ == "__main__":
     unittest.main()

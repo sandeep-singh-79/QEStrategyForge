@@ -17,9 +17,12 @@ In-progress analysis, temporary notes, open questions, and working context for t
 - User asked whether a Karpathy-style autoresearch refinement loop can be applied here and whether current binary validations are sufficient.
 
 ## Open Questions
-- Phase 7 direction: real LLM provider first, full CLI generation wiring, or extended artifact types?
-- Should prompt versioning be tracked in the repo (e.g. `prompts/` folder) once real providers are integrated?
-- Should a comparison report (deterministic vs LLM-assisted output side-by-side) be a standalone CLI option?
+- Resolved: Phase 7 direction → real LLM providers. Completed.
+- Resolved: prompt versioning → prompts/v1/ directory. Completed in Phase 8.
+- Resolved: comparison report → --compare CLI flag. Completed in Phase 8.
+- Resolved: Phase 10 direction → Karpathy optimization loop. Decision made 2026-04-16.
+- Open: should prompt mutation also modify scenario templates, or only base.txt?
+- Open: what is the minimum number of optimization iterations needed to demonstrate improvement?
 
 ## Phase Status Snapshot
 - Phase 1 complete
@@ -30,6 +33,8 @@ In-progress analysis, temporary notes, open questions, and working context for t
 - Phase 6 complete (2026-04-09)
 - Phase 7 complete (2026-04-09)
 - Phase 8 complete (2026-04-10)
+- Phase 9 complete (2026-04-10)
+- Phase 10 in progress (2026-04-16) — Karpathy optimization loop
 
 ## Deferred Items Log
 
@@ -48,16 +53,7 @@ In-progress analysis, temporary notes, open questions, and working context for t
 - ~~artifact_loader.py coverage 91%~~ — hardened to 100%
 - ~~Greenfield artifact benchmark missing~~ — benchmarks/artifact-greenfield/ committed
 
-### Still Deferred — Phase 8 Candidates
-
-**Prompt Engineering**
-- Prompt versioning: prompts built dynamically, no version history or template files.
-- Per-scenario prompt specialization: same template regardless of greenfield/brownfield.
-- Karpathy-style prompt optimization loop: deferred until content-level evaluator exists.
-
-**Benchmark Content Quality (needs live provider)**
-- Scenario-specific content assertions for LLM path: FakeLLMClient returns fixed brownfield content. Real pass/fail for greenfield, incomplete-context, and strong-automation benchmark scenarios requires a live provider generating scenario-aware output.
-- Quality scoring model: fluency, accuracy, coverage scoring not yet attempted.
+### Still Deferred — Beyond Phase 10
 
 **Live Provider Tests (beyond Ollama)**
 - OpenAI live integration test: mirrors test_live_ollama.py but for OpenAI API.
@@ -71,9 +67,7 @@ In-progress analysis, temporary notes, open questions, and working context for t
 
 **Architecture / Platform**
 - Multi-agent orchestration: no autonomous agent loop.
-- Autonomous iterative self-modification: system does not retry or self-improve output.
 - Live external connectors: no Jira, Confluence, or API-source ingestion.
-- Document OCR: no image or scanned PDF parsing.
 
 ## Validation Snapshot
 - Deterministic validation harness defined in `docs/VALIDATION-HARNESS.md`

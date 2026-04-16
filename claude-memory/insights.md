@@ -98,6 +98,25 @@ Reusable patterns, lessons learned, and decision rules for the `ai-test-strategy
 24. A FakeLLMClient that returns scenario-specific content only satisfies scenario-specific assertions.
 - The FakeLLMClient is for structural and infrastructure testing only.
 - Real benchmark assertion compatibility (content accuracy) requires a real LLM producing scenario-aware output.
+
+25. Binary scoring is the right model for prompt optimization evaluation.
+- Every check should be yes/no: assertion passed, heading natively present, label natively present, source == llm.
+- Score = count of passes. Higher is better. No weights, no thresholds, no subjective quality layers.
+- This makes improvement measurement fully objective and comparable across runs and sessions.
+
+26. Hybrid mutation (cumulative within run, baseline across runs) balances exploration and stability.
+- Cumulative within a run compounds improvements — a heading fix in iter 1 stays in iter 2.
+- Fresh baseline across runs prevents long-term drift from the known-good starting point.
+- Formalization step (save as v2) creates a new baseline for the next run.
+
+27. Experiment tracking belongs outside the committed codebase.
+- optimization_runs/ is .gitignored — large, ephemeral, experimental data stays local.
+- Only the formalized winner (prompts/v2/) enters the commit history.
+- The scoreboard (YAML) and summary (markdown) are the primary audit artifacts.
+
+28. Infrastructure changes required before optimization: benchmark_runner must return total check counts, not just failures.
+- The current run_assertions() returns only errors. The optimizer needs both total and failed to compute check counts.
+- _repair_output() returns aggregate injection counts. The optimizer needs per-heading/per-label granularity.
 - This boundary should be documented explicitly so future tests don't confuse structural validation with content quality.
 
 25. CLI flags that are accepted but not wired through are a deferred technical debt, not a feature.

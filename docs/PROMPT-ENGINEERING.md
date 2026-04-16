@@ -227,3 +227,90 @@ The Quality Indicators table only appears when the LLM-assisted path ran and ret
 - Required headings and labels in `output_validator.py` are the single source of truth. The prompt references them dynamically via `{required_headings}` and `{required_labels}`.
 - `not_applicable` decision values are not injected into prompts. The decisions block only contains active decisions.
 - API keys and provider credentials never appear in template files.
+
+---
+
+## Optimization Loop (Phase 10)
+
+The optimization loop systematically searches for prompt templates that score higher than the current `prompts/v1/` baseline, using a binary scoring model and five mutation strategies.
+
+### Binary Scoring Model
+
+Every run produces an integer score — the count of binary checks that passed. There are no weights; every check is equal.
+
+| Check | Source |
+|---|---|
+| `exit_code == 0` | `FlowResult` |
+| `source == "llm"` (not repair) | `repair_stats["source"]` |
+| Each individual assertion passed | `ValidationResult.total_checks - len(errors)` |
+| Each required heading present natively | `total_headings - headings_injected` |
+| Each required label present natively | `total_labels - labels_injected` |
+
+Scores are summed across all benchmark scenarios. The optimization loop keeps a prompt only if its aggregate score strictly exceeds the best score seen so far.
+
+### Mutation Strategies
+
+All mutations operate on `base.txt` only. The five strategies registered in `prompt_mutations.ALL_MUTATIONS` are:
+
+| Strategy | Effect |
+|---|---|
+| `emphasis_strengthening` | Adds `CRITICAL: ` prefix to `You MUST`, `It must include`, `Each section must` lines. Idempotent. |
+| `emphasis_removal` | Removes `CRITICAL: ` prefixes (revert of above). |
+| `instruction_reordering` | Shuffles the indented placement-bullet block in `base.txt`. |
+| `example_injection` | Appends a labeled-line example fragment at the end of the template. Idempotent. |
+| `example_removal` | Removes the example fragment (revert of above). |
+
+Mutations cycle in order across iterations. If a mutation produces no improvement, the best-so-far template is unchanged and the next mutation is applied to that same best template (cumulative within a run).
+
+### Running the Optimizer
+
+```bash
+python -m ai_test_strategy_generator.cli \
+    --optimize \
+    --optimize-iterations 5 \
+    --optimize-timeout 300 \
+    --optimize-output-dir optimization_runs/
+```
+
+- `--optimize-iterations` — number of total iterations including baseline (iter 0). Default: 5.
+- `--optimize-timeout` — maximum wall-clock seconds per iteration. Default: 300.
+- `--optimize-output-dir` — directory for experiment artifacts (`optimization_runs/` is `.gitignore`d).
+
+### Scoreboard Format
+
+After completion, the optimizer writes a `scoreboard.yaml` to `--optimize-output-dir`:
+
+```yaml
+baseline_aggregate: 240
+best_aggregate: 252
+best_iteration: 2
+improvement_delta: 12
+improved: true
+best_prompt_dir: optimization_runs/best
+iterations:
+  - iteration: 0
+    mutation: null
+    aggregate: 240
+    is_best: false
+  - iteration: 1
+    mutation: emphasis_strengthening
+    aggregate: 238
+    is_best: false
+  - iteration: 2
+    mutation: instruction_reordering
+    aggregate: 252
+    is_best: true
+```
+
+### Promoting a Winning Prompt
+
+When `improved: true` and `best_prompt_dir` contains templates:
+
+1. Review `optimization_runs/best/base.txt` — diff it against `prompts/v1/base.txt` to understand what changed.
+2. Copy to `prompts/v2/` — **never** overwrite `prompts/v1/`:
+   ```bash
+   cp -r optimization_runs/best/ src/ai_test_strategy_generator/prompts/v2/
+   ```
+3. Update `prompt_builder.py` to load from `v2` by default.
+4. Re-run the benchmark suite to confirm the improvement holds on fresh LLM calls.
+5. Commit `prompts/v2/` and the updated `prompt_builder.py` — **not** `optimization_runs/`.

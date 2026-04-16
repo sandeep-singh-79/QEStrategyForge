@@ -16,23 +16,29 @@ def run_assertions(markdown: str, assertions_path: str | Path) -> ValidationResu
     assertions = _load_assertions(assertions_path)
     errors: list[str] = []
 
-    for heading in assertions.get("must_include_headings", []):
+    headings = assertions.get("must_include_headings", [])
+    labels = assertions.get("must_include_labels", [])
+    substrings = assertions.get("must_include_substrings", [])
+    exclusions = assertions.get("must_not_include_substrings", [])
+    total_checks = len(headings) + len(labels) + len(substrings) + len(exclusions)
+
+    for heading in headings:
         if heading not in markdown:
             errors.append(f"Missing required heading: {heading}")
 
-    for label in assertions.get("must_include_labels", []):
+    for label in labels:
         if label not in markdown:
             errors.append(f"Missing required label: {label}")
 
-    for substring in assertions.get("must_include_substrings", []):
+    for substring in substrings:
         if substring not in markdown:
             errors.append(f"Missing required substring: {substring}")
 
-    for substring in assertions.get("must_not_include_substrings", []):
+    for substring in exclusions:
         if substring in markdown:
             errors.append(f"Forbidden substring present: {substring}")
 
-    return ValidationResult(is_valid=not errors, errors=errors)
+    return ValidationResult(is_valid=not errors, errors=errors, total_checks=total_checks)
 
 
 def _load_assertions(assertions_path: str | Path) -> dict[str, list[str]]:
