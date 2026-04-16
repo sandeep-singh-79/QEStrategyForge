@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from ai_test_strategy_generator.models import ClassificationResult, InputPackage
 from ai_test_strategy_generator.output_validator import REQUIRED_HEADINGS, REQUIRED_LABELS
 from ai_test_strategy_generator.template_loader import load_template
@@ -9,11 +11,16 @@ def build_prompt(
     input_package: InputPackage,
     classifications: ClassificationResult,
     decisions: dict[str, str],
+    prompt_dir: Path | None = None,
 ) -> str:
-    """Build a bounded prompt from normalized input, classification, and rule outputs."""
-    base = load_template("base")
+    """Build a bounded prompt from normalized input, classification, and rule outputs.
+
+    *prompt_dir*, if given, overrides the installed prompts directory.  Pass
+    this when scoring mutated templates during the optimization loop.
+    """
+    base = load_template("base", prompt_dir=prompt_dir)
     scenario_name = _select_scenario(classifications)
-    scenario = load_template(scenario_name)
+    scenario = load_template(scenario_name, prompt_dir=prompt_dir)
     return base.template_text.format(
         engagement_context=_format_engagement_context(input_package.normalized),
         classifications=_format_classifications(classifications),
