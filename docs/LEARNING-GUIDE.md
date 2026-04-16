@@ -297,6 +297,19 @@ For a deeper treatment — template anatomy, output contract design, repair mech
 - a larger injection count means the scenario template is under-instructing the LLM for that engagement type
 - explain in one sentence what a prompt engineer should do differently for the scenario with the higher injection count
 
+14. Run the prompt optimization loop and interpret the scoreboard:
+- run the optimizer against two benchmarks with 3 iterations:
+  ```bash
+  python -m ai_test_strategy_generator.cli \
+      --optimize \
+      --optimize-iterations 3 \
+      --optimize-output-dir optimization_runs/
+  ```
+- open `optimization_runs/scoreboard.yaml` and read the `improvement_delta` and `best_iteration` fields
+- identify which mutation strategy produced the best aggregate score (if any)
+- open `optimization_runs/iter_1/base.txt` and `optimization_runs/iter_0/base.txt` side-by-side — explain in plain language what changed
+- explain why a higher aggregate score does not always mean a better strategy — what else would you verify before promoting the winner to `prompts/v2/`?
+
 ## Expected Learning Outcome
 
 By working through this repo, you should learn:

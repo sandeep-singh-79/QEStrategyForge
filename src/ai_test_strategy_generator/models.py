@@ -63,6 +63,7 @@ class InputPackage:
 class ValidationResult:
     is_valid: bool
     errors: list[str] = field(default_factory=list)
+    total_checks: int = 0
 
 
 @dataclass(slots=True)

@@ -4,6 +4,7 @@
 .tracecov-main-harden/
 tests/.tmp/
 outputs/
+optimization_runs/
 __pycache__/
 *.pyc
 *.cover

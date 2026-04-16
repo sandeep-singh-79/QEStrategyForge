@@ -45,28 +45,38 @@ Current state, decisions, and active priorities for the `ai-test-strategy-genera
 - The repository will keep `claude-memory/`, `plan.md`, and `AGENTS.md` public as part of the visible development workflow.
 - The repository will use AGPL-3.0-or-later.
 - AGPL is the closest fit to the desired reciprocity behavior, but it does not require upstream pull requests back to this specific repository.
+- Phase 10 direction: Karpathy-style prompt optimization loop. Decision made 2026-04-16.
+- Optimization scoring: purely binary. Count of pass/fail checks across benchmarks. No weighted composites.
+- Hybrid mutation strategy: cumulative within a run (mutate best-so-far), fresh baseline on new runs.
+- Experiment tracking: optimization_runs/ directory (.gitignored). Config, scoreboard, per-iteration prompt snapshots, mutation descriptors. Only winning prompts (prompts/v2/) committed.
+- Winning prompts saved as prompts/v2/ (never overwrite v1). User explicitly adopts by updating prompt_builder.py.
+- Per-iteration wall-clock timeout: 300s default.
+- After Phase 10: merge to master, park repo, transition to intelligent-regression-optimizer.
 
 ## Active Next Work
-- Phase 9 is now complete (all 13 slices A1–E2 delivered, 287 non-live tests green, 6 live Ollama benchmark tests pass).
-- Phase 9 delivered: duplicate prompt field fix (A1), timeout=300 for OpenAI/Gemini (A2), Gemini repr masking (A3), FlowResult TypedDict + EXIT_* constants + make_flow_result() (B1), structured logging in llm_flow.py (B2), line-anchored repair logic (B3), conftest.py + pytest markers (C1), live test dedup (C2), rule engine tests 4→9 (D1), LLM repair edge cases +4 (D2), contract tests new file +7 (D3), repair_stats in FlowResult (E1), Quality Indicators table in comparison.py (E2).
-- Candidate directions for Phase 10:
-  - OpenAI/Gemini live integration tests
-  - Karpathy-style prompt optimization loop
-  - Extended artifact support (.pdf, .docx)
-  - Quality scoring model
-  - CODEX.md reference document
+- Phase 10: Karpathy-style prompt optimization loop (8 slices: 10.1–10.8).
+  - 10.1: Wire repair_stats to comparison report in CLI
+  - 10.2: Binary scoring function (optimizer_score.py) — count of pass/fail checks, no weights
+  - 10.3: Optimization loop runner (prompt_optimizer.py) — hybrid mutation, per-iteration timeout
+  - 10.4: Prompt mutation strategies (2–3 simple: emphasis reordering, instruction strengthening, example injection)
+  - 10.5: CLI --optimize flag
+  - 10.6: Optimization report (markdown scoreboard table, scoreboard.yaml)
+  - 10.7: Documentation updates
+  - 10.8: Final test suite (~300+ tests), merge to master
+- Prerequisites for 10.2: benchmark_runner.run_assertions() must return total_checks; _repair_output() must return per-heading/per-label breakdown.
+- After Phase 10: merge to master, park repo, transition to intelligent-regression-optimizer.
 
 ## Blockers
 - No setup blocker.
 - Git in this environment may leave stray lock files in `.git` during some commands; if Git operations fail, inspect lock-file state first.
 
 ## Known Deferred Technical Debt
-- **Prompt optimization loop**: Karpathy-style loop is now feasible; content-level assertions + live benchmarks exist. Deferred to Phase 9.
-- **Live integration tests for OpenAI and Gemini**: only Ollama has live tests; OpenAI/Gemini deferred.
-- **Extended artifact types**: `.pdf`, `.docx`, `.xlsx`, `.csv` still not supported.
-- **Quality scoring model**: fluency/accuracy scoring not yet attempted.
-- **CODEX.md reference**: deferred from Phase 6, still not created.
-- **Multi-agent orchestration**: no autonomous agent loop.
+- **Prompt optimization loop**: Phase 10 — in progress (Karpathy-style loop with binary scoring).
+- **Live integration tests for OpenAI and Gemini**: only Ollama has live tests; deferred beyond Phase 10.
+- **Extended artifact types**: `.pdf`, `.docx`, `.xlsx`, `.csv` still not supported; deferred.
+- **Quality scoring model**: superseded by binary scoring in optimization loop.
+- **CODEX.md reference**: deferred from Phase 6, still not created; deferred.
+- **Multi-agent orchestration**: no autonomous agent loop; deferred.
 
 ## Implementation Snapshot
 - Phases 1–9 complete.

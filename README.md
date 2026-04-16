@@ -18,12 +18,22 @@ Key capabilities:
 - Four-layer provider configuration (built-in defaults → config file → env vars → CLI flags)
 - Benchmark-driven pass/fail evaluation on all scenarios — structural and content-level assertions
 - Side-by-side deterministic vs LLM comparison with `--compare`
-- 268+ automated tests; 100% pass rate required before merge
+- Karpathy-style prompt optimization loop with binary scoring and 5 mutation strategies (`--optimize`)
+- 342+ automated tests; 100% pass rate required before merge
 
 ## Repo Layout
 
 - `src/ai_test_strategy_generator/`
-  Deterministic generator code.
+  Deterministic generator code. Key modules:
+  - `context_classifier.py` — classifies 6 engagement dimensions
+  - `rule_engine.py` — deterministic 9-key decision engine
+  - `renderer.py` — populates the Markdown output template
+  - `output_validator.py` — enforces 14 headings + 18 required labels
+  - `benchmark_runner.py` — runs YAML assertion files against output
+  - `llm_flow.py` — LLM-assisted orchestration (prompt build → LLM → repair → validate)
+  - `optimizer_score.py` — binary scoring model for prompt optimization
+  - `prompt_mutations.py` — 5 mutation strategies (emphasis, reordering, examples)
+  - `prompt_optimizer.py` — Karpathy-style optimization loop runner
 - `tests/`
   Automated test suite.
 - `benchmarks/`
