@@ -40,6 +40,7 @@ def run_llm_artifact_benchmark_flow(
     output_path: str | Path,
     llm_config: LLMConfig,
     llm_client: LLMClient,
+    prompt_dir: Path | None = None,
 ) -> FlowResult:
     """Load artifact folder and run the LLM-assisted strategy generation flow."""
     try:
@@ -53,7 +54,7 @@ def run_llm_artifact_benchmark_flow(
         return make_flow_result(False, EXIT_INPUT_INVALID, [str(exc)], [], output_path)
 
     return run_llm_input_package_flow(
-        input_package, assertions_path, output_path, llm_config, llm_client
+        input_package, assertions_path, output_path, llm_config, llm_client, prompt_dir=prompt_dir
     )
 
 
@@ -63,6 +64,7 @@ def run_llm_benchmark_flow(
     output_path: str | Path,
     llm_config: LLMConfig,
     llm_client: LLMClient,
+    prompt_dir: Path | None = None,
 ) -> FlowResult:
     """Load input from file and run the LLM-assisted strategy generation flow."""
     try:
@@ -71,7 +73,7 @@ def run_llm_benchmark_flow(
         return make_flow_result(False, EXIT_LOAD_ERROR, [str(exc)], [], output_path)
 
     return run_llm_input_package_flow(
-        input_package, assertions_path, output_path, llm_config, llm_client
+        input_package, assertions_path, output_path, llm_config, llm_client, prompt_dir=prompt_dir
     )
 
 
@@ -81,6 +83,7 @@ def run_llm_input_package_flow(
     output_path: str | Path,
     llm_config: LLMConfig,
     llm_client: LLMClient,
+    prompt_dir: Path | None = None,
 ) -> FlowResult:
     """Run the LLM-assisted strategy generation flow from a pre-loaded InputPackage."""
     input_validation = validate_input(input_package)
@@ -92,7 +95,7 @@ def run_llm_input_package_flow(
 
     # Build prompt and call LLM; RuntimeError (timeout, network, bad response)
     # triggers the same repair → deterministic fallback chain.
-    prompt = build_prompt(input_package, classifications, decisions)
+    prompt = build_prompt(input_package, classifications, decisions, prompt_dir=prompt_dir)
     request = GenerationRequest(
         prompt=prompt,
         model=llm_config.model,

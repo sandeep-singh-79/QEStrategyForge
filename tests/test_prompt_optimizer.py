@@ -17,6 +17,7 @@ from ai_test_strategy_generator.prompt_optimizer import (
     IterationRecord,
     OptimizationConfig,
     OptimizationResult,
+    _score_iteration,
     run_optimization_loop,
 )
 
@@ -292,6 +293,80 @@ class RunOptimizationLoopTests(unittest.TestCase):
             "instruction_reordering",
             "emphasis_strengthening",
         ])
+
+
+# ---------------------------------------------------------------------------
+# _score_iteration — pipeline integration (RED test exposes core bug)
+# ---------------------------------------------------------------------------
+
+_REAL_PROMPTS_V1 = (
+    Path(__file__).parent.parent
+    / "src" / "ai_test_strategy_generator" / "prompts" / "v1"
+)
+_UNIQUE_MARKER = "UNIQUE_TEST_MARKER_XYZ_42"
+
+
+class _CapturingClient:
+    """LLMClient that records the prompt text it receives."""
+
+    def __init__(self) -> None:
+        self.last_prompt: str = ""
+
+    def generate(
+        self, request: object
+    ) -> object:
+        from ai_test_strategy_generator.llm_client import GenerationRequest
+        assert isinstance(request, GenerationRequest)
+        self.last_prompt = request.prompt
+        return FakeLLMClient().generate(request)
+
+
+class ScoreIterationPipelineTests(unittest.TestCase):
+    """Verify that _score_iteration uses the templates dict it receives.
+
+    This is the core behavioural contract of the optimizer: if mutations
+    written to a temp dir are not fed into the LLM prompt, then scoring
+    different prompt variants is meaningless.
+    """
+
+    def setUp(self) -> None:
+        self._tmpdir = tempfile.mkdtemp()
+        self._prompt_dir = Path(self._tmpdir) / "prompts"
+        # Copy installed v1 templates so the flow can find scenario files.
+        shutil.copytree(str(_REAL_PROMPTS_V1), str(self._prompt_dir))
+        # Inject a unique marker into base.txt so we can detect which file was loaded.
+        base_path = self._prompt_dir / "base.txt"
+        base_path.write_text(
+            f"# {_UNIQUE_MARKER}\n" + base_path.read_text(encoding="utf-8"),
+            encoding="utf-8",
+        )
+
+    def tearDown(self) -> None:
+        shutil.rmtree(self._tmpdir, ignore_errors=True)
+
+    def test_score_iteration_uses_provided_base_template(self) -> None:
+        """The templates dict passed to _score_iteration must be used to build
+        the LLM prompt.  If the installed base.txt is loaded instead, mutations
+        never affect scoring and the whole optimization loop is a no-op.
+        """
+        templates = {
+            f.name: f.read_text(encoding="utf-8")
+            for f in self._prompt_dir.glob("*.txt")
+        }
+        client = _CapturingClient()
+        specs = [BenchmarkSpec(
+            _BENCHMARKS_DIR / "brownfield-partial-automation.input.yaml",
+            _BENCHMARKS_DIR / "brownfield-partial-automation.assertions.yaml",
+        )]
+
+        _score_iteration(templates, specs, LLMConfig(model="fake"), client, timeout_per_iter=60)
+
+        self.assertIn(
+            _UNIQUE_MARKER,
+            client.last_prompt,
+            "Templates provided to _score_iteration must be used to build the LLM prompt. "
+            "If this fails, mutations have zero effect on scoring.",
+        )
 
 
 if __name__ == "__main__":

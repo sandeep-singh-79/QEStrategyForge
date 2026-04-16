@@ -195,6 +195,7 @@ def _score_iteration(
                     out_path,
                     llm_config,
                     llm_client,
+                    prompt_dir=tmp_prompt_dir,
                 )
                 assertion_result = run_assertions(
                     out_path.read_text(encoding="utf-8") if out_path.exists() else "",
