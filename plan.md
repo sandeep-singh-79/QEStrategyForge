@@ -2,7 +2,7 @@
 
 > **Purpose:** Track the active planning and execution steps for the `ai-test-strategy-generator` repository.
 > **Scope:** Session-specific or cycle-specific. Refresh as milestones move and promote durable outcomes into `claude-memory/`.
-> **Last Updated:** 2026-04-09
+> **Last Updated:** 2026-04-16
 
 ---
 
@@ -12,8 +12,8 @@
 |---|---|
 | Capability | ai-test-strategy-generator |
 | Objective | Phase 6 bounded LLM integration — delivered |
-| Current Phase | Phase 6 Complete |
-| Current Focus | Phase 7 planning (real LLM provider / CLI expansion) |
+| Current Phase | Phase 10 Complete |
+| Current Focus | Merge to master, then initialize intelligent-regression-optimizer |
 
 ---
 
@@ -62,10 +62,10 @@
 
 ## Immediate Next Actions
 
-1. Decide Phase 10 focus: Karpathy-style prompt optimization loop, OR live tests for OpenAI/Gemini, OR extended artifact types, OR CODEX.md reference
-2. If prompt optimization: set up automated benchmark runner that saves comparison reports and iterates templates
-3. If live provider coverage: add `tests/test_live_openai.py` and `tests/test_live_gemini.py` mirroring the live Ollama pattern
-4. Continue TDD + deterministic validation for every new slice
+1. Merge `phase-5-artifact-ingestion` branch to `master`
+2. Push master to origin
+3. Initialize `intelligent-regression-optimizer` repo (new workspace folder, Git, AGENTS.md, plan.md, claude-memory/)
+4. Define MVP for intelligent-regression-optimizer: synthetic metadata YAML → prioritized test list + skip recommendations + time estimate
 
 ---
 

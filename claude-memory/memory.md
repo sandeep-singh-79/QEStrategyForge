@@ -54,24 +54,17 @@ Current state, decisions, and active priorities for the `ai-test-strategy-genera
 - After Phase 10: merge to master, park repo, transition to intelligent-regression-optimizer.
 
 ## Active Next Work
-- Phase 10: Karpathy-style prompt optimization loop (8 slices: 10.1–10.8).
-  - 10.1: Wire repair_stats to comparison report in CLI
-  - 10.2: Binary scoring function (optimizer_score.py) — count of pass/fail checks, no weights
-  - 10.3: Optimization loop runner (prompt_optimizer.py) — hybrid mutation, per-iteration timeout
-  - 10.4: Prompt mutation strategies (2–3 simple: emphasis reordering, instruction strengthening, example injection)
-  - 10.5: CLI --optimize flag
-  - 10.6: Optimization report (markdown scoreboard table, scoreboard.yaml)
-  - 10.7: Documentation updates
-  - 10.8: Final test suite (~300+ tests), merge to master
-- Prerequisites for 10.2: benchmark_runner.run_assertions() must return total_checks; _repair_output() must return per-heading/per-label breakdown.
-- After Phase 10: merge to master, park repo, transition to intelligent-regression-optimizer.
+- Phase 10 COMPLETE. Commit: `77e492d` on branch `phase-5-artifact-ingestion`. 342 tests passing.
+- Next: merge branch to master, then initialize `intelligent-regression-optimizer` repo.
+- After merge: park this repo. All future work moves to intelligent-regression-optimizer.
+- Prerequisites for Phase 10 satisfied: benchmark_runner.run_assertions() returns total_checks; repair_stats wired to FlowResult and comparison report.
 
 ## Blockers
 - No setup blocker.
 - Git in this environment may leave stray lock files in `.git` during some commands; if Git operations fail, inspect lock-file state first.
 
 ## Known Deferred Technical Debt
-- **Prompt optimization loop**: Phase 10 — in progress (Karpathy-style loop with binary scoring).
+- **Prompt optimization loop**: Phase 10 COMPLETE — binary scoring, 5 mutation strategies, --optimize CLI flag, scoreboard.yaml writer, 342 tests.
 - **Live integration tests for OpenAI and Gemini**: only Ollama has live tests; deferred beyond Phase 10.
 - **Extended artifact types**: `.pdf`, `.docx`, `.xlsx`, `.csv` still not supported; deferred.
 - **Quality scoring model**: superseded by binary scoring in optimization loop.
@@ -79,9 +72,9 @@ Current state, decisions, and active priorities for the `ai-test-strategy-genera
 - **Multi-agent orchestration**: no autonomous agent loop; deferred.
 
 ## Implementation Snapshot
-- Phases 1–9 complete.
-- Phase 9 delivered: prompt_builder.py duplicate field removed; timeout=300 added to OpenAI/Gemini clients; GeminiClient repr masks key; FlowResult TypedDict + EXIT_* constants + make_flow_result() factory in models.py; all 3 flow modules (end_to_end_flow, artifact_end_to_end_flow, llm_flow) return FlowResult; structured logging at all LLM decision points via `_log`; _repair_output() line-anchored checks + returns (str, dict) with counts; repair_stats wired through LLM flow into FlowResult; Quality Indicators table in comparison.py when repair_stats passed; conftest.py + pytest markers (live, benchmark); live test helper extracted.
-- Test baseline: 287 non-live tests passing. 6 live Ollama tests passing (glm-5:cloud, ~8 min).
+- Phases 1–10 complete.
+- Phase 10 delivered: optimizer_score.py (binary scoring), prompt_mutations.py (5 strategies), prompt_optimizer.py (Karpathy loop), models.py ValidationResult.total_checks, benchmark_runner run_assertions total_checks, cli.py --optimize flags + _run_optimization() + scoreboard.yaml writer, repair_stats wired to comparison report. 55 new tests + 3 total_checks tests. .gitignore: optimization_runs/. Docs updated.
+- Test baseline: 342 non-live tests passing. 6 live Ollama tests passing.
 - Key updated modules in Phase 9: prompt_builder.py (A1), openai_client.py (A2), gemini_client.py (A2, A3), models.py (B1, E1), end_to_end_flow.py (B1), artifact_end_to_end_flow.py (B1), llm_flow.py (B2, B3, E1), comparison.py (E2), pyproject.toml (C1).
 - Key new test files: tests/conftest.py (C1), tests/test_contracts.py (D3).
 - not_applicable decision values are filtered from the prompt decisions block.
