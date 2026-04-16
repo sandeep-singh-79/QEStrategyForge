@@ -35,13 +35,6 @@ Trailing line.
 
 # Use the actual marker that example_injection produces
 _EXAMPLE_MARKER = "## EXAMPLE (do not reproduce verbatim)"
-_BASE_WITH_EXAMPLE = f"""\
-Normal content here.
-{_EXAMPLE_MARKER}
-  Strategy Confidence: standard
-{_EXAMPLE_MARKER.replace('## EXAMPLE', 'end')}
-Final line.
-"""
 
 
 class EmphasisStrengtheningTests(unittest.TestCase):
