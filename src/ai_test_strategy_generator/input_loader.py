@@ -18,6 +18,7 @@ LIST_FIELDS = {
     "missing_information",
     "ai_governance_constraints",
     "human_review_expectations",
+    "nfr_priorities",
 }
 
 

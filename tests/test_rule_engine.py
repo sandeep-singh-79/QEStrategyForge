@@ -172,6 +172,84 @@ class RuleEngineTests(unittest.TestCase):
         self.assertIn("brownfield_transition_strategy", result)
         self.assertEqual(result["brownfield_transition_strategy"], "not_applicable")
 
+    # ------------------------------------------------------------------
+    # Phase 11B3 — nfr_depth decision (Rule SA-2)
+    # ------------------------------------------------------------------
+
+    def test_high_nfr_priority_produces_deep_nfr_depth(self) -> None:
+        from ai_test_strategy_generator.rule_engine import apply_rules
+
+        classifications = {
+            "project_posture": "brownfield",
+            "automation_maturity": "partial",
+            "ci_cd_maturity": "partial",
+            "system_profile": "api_first",
+            "regulatory_sensitivity": "high",
+            "information_completeness": "sufficient",
+            "nfr_priority": "high",
+        }
+
+        result = apply_rules(classifications)
+
+        self.assertEqual(result["nfr_depth"], "deep")
+
+    def test_standard_nfr_priority_produces_standard_nfr_depth(self) -> None:
+        from ai_test_strategy_generator.rule_engine import apply_rules
+
+        classifications = {
+            "project_posture": "brownfield",
+            "automation_maturity": "partial",
+            "ci_cd_maturity": "partial",
+            "system_profile": "api_first",
+            "regulatory_sensitivity": "low",
+            "information_completeness": "sufficient",
+            "nfr_priority": "standard",
+        }
+
+        result = apply_rules(classifications)
+
+        self.assertEqual(result["nfr_depth"], "standard")
+
+    def test_missing_nfr_priority_defaults_to_standard_nfr_depth(self) -> None:
+        from ai_test_strategy_generator.rule_engine import apply_rules
+
+        classifications = {
+            "project_posture": "brownfield",
+            "automation_maturity": "partial",
+            "ci_cd_maturity": "partial",
+            "system_profile": "api_first",
+            "regulatory_sensitivity": "low",
+            "information_completeness": "sufficient",
+            # nfr_priority deliberately absent
+        }
+
+        result = apply_rules(classifications)
+
+        self.assertEqual(result["nfr_depth"], "standard")
+
+    def test_all_unknown_classifications_includes_nfr_depth(self) -> None:
+        from ai_test_strategy_generator.rule_engine import apply_rules
+
+        result = apply_rules({})
+
+        self.assertIn("nfr_depth", result)
+        self.assertEqual(result["nfr_depth"], "standard")
+
+    def test_decision_keys_total_includes_nfr_depth(self) -> None:
+        from ai_test_strategy_generator.rule_engine import apply_rules
+
+        result = apply_rules({
+            "project_posture": "brownfield",
+            "automation_maturity": "partial",
+            "ci_cd_maturity": "partial",
+            "system_profile": "api_first",
+            "regulatory_sensitivity": "low",
+            "information_completeness": "sufficient",
+            "nfr_priority": "standard",
+        })
+
+        self.assertEqual(len(result), 10)
+
 
 if __name__ == "__main__":
     unittest.main()

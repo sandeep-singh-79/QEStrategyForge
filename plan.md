@@ -12,8 +12,8 @@
 |---|---|
 | Capability | ai-test-strategy-generator |
 | Objective | Phase 6 bounded LLM integration — delivered |
-| Current Phase | Phase 10 Complete |
-| Current Focus | Merge to master, then initialize intelligent-regression-optimizer |
+| Current Phase | Phase 10 Complete — Phase 11 Planned |
+| Current Focus | Phase 11: Content Depth + NFR Support + Self-Benchmark |
 
 ---
 
@@ -62,10 +62,13 @@
 
 ## Immediate Next Actions
 
-1. Merge `phase-5-artifact-ingestion` branch to `master`
-2. Push master to origin
-3. Initialize `intelligent-regression-optimizer` repo (new workspace folder, Git, AGENTS.md, plan.md, claude-memory/)
-4. Define MVP for intelligent-regression-optimizer: synthetic metadata YAML → prioritized test list + skip recommendations + time estimate
+Phase 11 implementation plan: `docs/PHASE-11-IMPLEMENTATION-PLAN.md`
+
+1. **Phase A** — Content-Depth Assertions: strengthen 4 assertion YAMLs with engagement-specific must_include/must_not_include, add 3 tests
+2. **Phase B** — NFR Support (B1→B5): input_loader → classifier → rule_engine → prompt/validator/renderer → benchmark. ~20 tests
+3. **Phase C** — QEStrategyForge Self-Benchmark: self.input.yaml + assertions, 4 tests (FakeLLM exit 4 proves specificity)
+4. Verify: ~380+ tests pass, RED proofs for content-depth and NFR, no regressions
+5. After Phase 11: merge phase-5-artifact-ingestion → master, push, initialize intelligent-regression-optimizer
 
 ---
 

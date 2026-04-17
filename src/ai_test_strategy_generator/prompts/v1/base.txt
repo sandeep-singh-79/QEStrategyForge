@@ -24,6 +24,7 @@ Place each decision in its natural section:
   CI/CD Posture goes in CI/CD And Quality Gates as Target CI/CD Posture.
   Governance Depth and Reporting Emphasis go in Defect, Triage, And Reporting Model. You MUST include both of these lines.
   Assumption Mode and Strategy Confidence go in Assumptions, Gaps, And Open Questions or Executive Summary.
+  NFR Depth goes in Test Types And Coverage Focus as a "Non-Functional Priorities:" labeled line. When nfr_depth is "deep", provide a specific test approach for each priority listed in the engagement context. When nfr_depth is "standard", include general non-functional testing guidance.
   Do NOT invent decisions not listed above. Do NOT include a line for any decision that is absent from the Deterministic Rule Decisions section.
 
 ## Instructions

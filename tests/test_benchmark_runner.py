@@ -138,6 +138,62 @@ class BenchmarkRunnerTests(unittest.TestCase):
         # 1 heading + 1 label = 2 total checks
         self.assertEqual(result.total_checks, 2)
 
+    # ------------------------------------------------------------------
+    # Phase 11A — content-depth: must_not_include behaviour
+    # ------------------------------------------------------------------
+
+    def test_must_not_include_passes_when_forbidden_term_is_absent(self) -> None:
+        from ai_test_strategy_generator.benchmark_runner import run_assertions
+
+        assertions_file = self.make_assertions_file(
+            "must_not_include_substrings:\n  - \"generic test strategy\"\n"
+        )
+        markdown = "This is a tailored brownfield QE strategy.\n"
+
+        result = run_assertions(markdown, assertions_file)
+
+        self.assertTrue(result.is_valid)
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.total_checks, 1)
+
+    def test_empty_must_not_include_list_is_treated_as_no_constraint(self) -> None:
+        from ai_test_strategy_generator.benchmark_runner import run_assertions
+
+        assertions_file = self.make_assertions_file(
+            "must_not_include_substrings: []\n"
+        )
+        markdown = "generic test strategy, as needed, boilerplate text\n"
+
+        result = run_assertions(markdown, assertions_file)
+
+        self.assertTrue(result.is_valid)
+        self.assertEqual(result.errors, [])
+        self.assertEqual(result.total_checks, 0)
+
+    def test_must_not_include_content_depth_rejects_generic_phrase(self) -> None:
+        from ai_test_strategy_generator.benchmark_runner import run_assertions
+
+        assertions_file = self.make_assertions_file(
+            "\n".join([
+                "must_include_substrings:",
+                '  - "claim adjudication"',
+                "must_not_include_substrings:",
+                '  - "generic test strategy"',
+                '  - "as needed"',
+            ])
+        )
+        markdown = (
+            "Critical Business Flows: claim adjudication, payout processing\n"
+            "This is a generic test strategy for the project as needed.\n"
+        )
+
+        result = run_assertions(markdown, assertions_file)
+
+        self.assertFalse(result.is_valid)
+        self.assertEqual(result.total_checks, 3)
+        self.assertTrue(any("generic test strategy" in e for e in result.errors))
+        self.assertTrue(any("as needed" in e for e in result.errors))
+
 
 if __name__ == "__main__":
     unittest.main()

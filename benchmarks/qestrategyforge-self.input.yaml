@@ -1,0 +1,49 @@
+engagement_name: QEStrategyForge
+domain: Developer Tooling
+delivery_model: Agile
+project_posture: brownfield
+timeline_pressure: low
+
+business_goal: Validate that AI-assisted QE strategy generation is reliable, deterministic, and prompt-consistent
+quality_goal: Ensure benchmark-driven strategy generation produces engagement-specific and structurally correct outputs
+release_expectation: Ongoing; new prompt versions validated through optimization loop before adoption
+
+critical_business_flows:
+  - benchmark-driven strategy generation
+  - prompt optimization loop
+  - deterministic fallback chain
+
+system_type: CLI and LLM pipeline
+applications_in_scope:
+  - ai_test_strategy_generator CLI
+  - benchmark runner
+  - prompt optimizer
+key_integrations:
+  - Ollama local LLM
+  - FakeLLMClient for deterministic testing
+platform_notes: Python CLI tool with deterministic core and optional LLM augmentation
+
+existing_test_process: Pytest with unit, integration, and live Ollama tests
+existing_automation_state: strong
+ci_cd_maturity: mature
+environment_maturity: strong
+test_data_maturity: strong
+
+known_constraints:
+  - Single developer; no dedicated QE resource
+  - LLM responses are non-deterministic; deterministic fallback required
+nfr_priorities:
+  - reliability
+  - LLM response time
+  - prompt consistency
+regulatory_or_compliance_needs: []
+delivery_risks:
+  - prompt drift across optimization runs
+  - FakeLLMClient divergence from real LLM behaviour
+missing_information: []
+
+requirements_available: yes - AGENTS.md and plan.md define expected behaviour
+api_docs_available: yes - source code is the contract
+existing_test_cases_available: yes - 345+ tests
+ai_adoption_posture: supportive
+strategy_depth: detailed

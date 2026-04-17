@@ -224,3 +224,8 @@ Reusable patterns, lessons learned, and decision rules for the `ai-test-strategy
 - Provider base URL, temperature, max_tokens, and model can all be committed to a team config file.
 - API keys and tokens must always come from environment variables — this is a security invariant, not a preference.
 - The loader should warn loudly and ignore silently if a secret key appears in the config file.
+
+38. Commit messages should be brief (KISS); PR descriptions are where the detail belongs.
+- A commit message like "Phase 11: content-depth assertions, NFR support, self-benchmark (373 tests)" is enough.
+- The PR description carries the full breakdown: what changed, why, test counts, verification steps.
+- Verbose commit messages create noise in `git log` and are rarely read at that granularity.

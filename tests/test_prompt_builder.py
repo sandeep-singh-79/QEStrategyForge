@@ -244,5 +244,65 @@ class ScenarioContentInPromptTests(unittest.TestCase):
         self.assertIn("audit", prompt.lower())
 
 
+# ------------------------------------------------------------------
+# Phase 11B4 — NFR context line in prompt
+# ------------------------------------------------------------------
+
+class NFRPromptContextTests(unittest.TestCase):
+    def _make_package_with_nfr(self, nfr_priorities: list[str]) -> InputPackage:
+        return InputPackage(
+            source_path=Path("test.yaml"),
+            raw={},
+            normalized={
+                "project_posture": "brownfield",
+                "delivery_model": "Agile",
+                "system_type": "API",
+                "domain": "fintech",
+                "quality_goal": "stability",
+                "business_goal": "reduce risk",
+                "existing_automation_state": "partial",
+                "target_automation_state": "full",
+                "ci_cd_maturity": "partial",
+                "ai_adoption_posture": "cautious",
+                "regulatory_or_compliance_needs": [],
+                "critical_business_flows": [],
+                "known_constraints": [],
+                "delivery_risks": [],
+                "key_integrations": [],
+                "missing_information": [],
+                "human_review_expectations": [],
+                "environment_maturity": "partial",
+                "test_data_maturity": "partial",
+                "nfr_priorities": nfr_priorities,
+            },
+        )
+
+    def test_prompt_context_includes_nfr_line_when_priorities_provided(self) -> None:
+        from ai_test_strategy_generator.prompt_builder import build_prompt
+        from ai_test_strategy_generator.context_classifier import classify_context
+        from ai_test_strategy_generator.rule_engine import apply_rules
+
+        pkg = self._make_package_with_nfr(["performance", "security", "compliance"])
+        cls = classify_context(pkg)
+        dec = apply_rules(cls)
+        prompt = build_prompt(pkg, cls, dec)
+
+        self.assertIn("Non-Functional Priorities: performance, security, compliance", prompt)
+
+    def test_prompt_context_omits_nfr_line_when_no_priorities(self) -> None:
+        from ai_test_strategy_generator.prompt_builder import build_prompt
+        from ai_test_strategy_generator.context_classifier import classify_context
+        from ai_test_strategy_generator.rule_engine import apply_rules
+
+        pkg = self._make_package_with_nfr([])
+        cls = classify_context(pkg)
+        dec = apply_rules(cls)
+        prompt = build_prompt(pkg, cls, dec)
+
+        # The label appears in the required output schema section but NOT in the engagement context block
+        # We verify the engagement context block does not contain the specific NFR values
+        self.assertNotIn("Non-Functional Priorities: ", prompt.split("## Required Output Contract")[0])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -62,6 +62,9 @@ def _format_engagement_context(data: dict[str, object]) -> str:
         f"Missing Information: {_join(data.get('missing_information', []))}",
         f"Human Review Boundaries: {_join(data.get('human_review_expectations', []))}",
     ]
+    nfr = data.get("nfr_priorities", [])
+    if isinstance(nfr, list) and nfr:
+        lines.append(f"Non-Functional Priorities: {_join(nfr)}")
     return "\n".join(lines)
 
 

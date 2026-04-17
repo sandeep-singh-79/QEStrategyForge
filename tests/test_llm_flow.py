@@ -530,5 +530,64 @@ def _build_minimal_valid_content() -> str:
     return "\n\n".join(f"{h}\nContent." for h in REQUIRED_HEADINGS)
 
 
+# ------------------------------------------------------------------
+# Phase 11B5 — NFR benchmark through LLM flow
+# ------------------------------------------------------------------
+
+class NFRBenchmarkLLMFlowTests(unittest.TestCase):
+    def test_nfr_benchmark_llm_flow_output_contains_nfr_label(self) -> None:
+        """NFR benchmark flow should produce output with Non-Functional Priorities: label."""
+        from ai_test_strategy_generator.llm_flow import run_llm_benchmark_flow
+        from ai_test_strategy_generator.models import LLMConfig
+
+        # Use a minimal assertions file that only checks the NFR label presence
+        assertions_path = Path("tests/.tmp/llm-flow") / "nfr-minimal.assertions.yaml"
+        assertions_path.parent.mkdir(parents=True, exist_ok=True)
+        assertions_path.write_text(
+            "must_include_substrings:\n  - \"Non-Functional Priorities:\"\n",
+            encoding="utf-8",
+        )
+
+        result = run_llm_benchmark_flow(
+            Path("benchmarks/nfr-heavy-api.input.yaml"),
+            assertions_path,
+            _out(),
+            LLMConfig(model="fake"),
+            FakeLLMClient(),
+        )
+
+        self.assertTrue(result["success"])
+        self.assertEqual(result["exit_code"], 0)
+        self.assertEqual(result["assertion_errors"], [])
+
+
+# ------------------------------------------------------------------
+# Phase 11C — QEStrategyForge self-benchmark LLM flow
+# ------------------------------------------------------------------
+
+class SelfBenchmarkLLMFlowTests(unittest.TestCase):
+    def test_self_benchmark_fake_llm_exits_4_proving_domain_specificity(self) -> None:
+        """FakeLLMClient returns brownfield-insurance content.
+        Self-benchmark requires developer-tooling terms → assertions fail → exit 4.
+        This proves the system is NOT generating generic content.
+        """
+        from ai_test_strategy_generator.llm_flow import run_llm_benchmark_flow
+        from ai_test_strategy_generator.models import LLMConfig
+
+        result = run_llm_benchmark_flow(
+            Path("benchmarks/qestrategyforge-self.input.yaml"),
+            Path("benchmarks/qestrategyforge-self.assertions.yaml"),
+            _out(),
+            LLMConfig(model="fake"),
+            FakeLLMClient(),
+        )
+
+        # FakeLLMClient does not produce developer-tooling content →
+        # assertions for "prompt optimization", "benchmark" etc. must fail
+        self.assertFalse(result["success"])
+        self.assertEqual(result["exit_code"], 4)
+        self.assertTrue(len(result["assertion_errors"]) > 0)
+
+
 if __name__ == "__main__":
     unittest.main()

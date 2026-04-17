@@ -21,9 +21,14 @@ must_include_substrings:
   - "phased_expansion"
   - "Governance Depth: high"
   - "progressive_gates"
+  - "claim adjudication"
+  - "payment gateway"
+  - "auditability"
 
 must_not_include_substrings:
   - "Project Posture: greenfield"
   - "Current Automation State: none"
   - "foundation_first"
   - "optimize_and_govern"
+  - "generic test strategy"
+  - "as needed"

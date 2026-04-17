@@ -243,4 +243,5 @@ def _build_label_values(
         "Assumption Mode:": d.get("assumption_mode", "not specified"),
         "Strategy Confidence:": d.get("strategy_confidence", "not specified"),
         "Recommended Immediate Actions:": "validate current-state evidence and confirm scope",
+        "Non-Functional Priorities:": _join_list(input_data.get("nfr_priorities", [])) or "performance, security, accessibility, and resilience",
     }

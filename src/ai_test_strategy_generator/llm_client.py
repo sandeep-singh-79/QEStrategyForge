@@ -38,14 +38,15 @@ This strategy is tailored for a test engagement with a focus on quality improvem
 Project Posture: brownfield
 Delivery Model: Agile
 System Type: microservices
-Critical Business Flows: test flow
-Key Constraints: none
+Critical Business Flows: claim adjudication, payout processing
+Key Integrations: policy platform, payment gateway
+Key Constraints: limited QE capacity
 
 ## Quality Objectives And Risk Priorities
 Primary Quality Goal: regression stability
 Business Goal: reduce defect escape rate
-Risk Priorities: none
-Compliance Focus: none
+Risk Priorities: integration instability
+Compliance Focus: auditability, privacy-sensitive test data
 
 ## Lifecycle Posture
 Shift-Left Stance: moderate

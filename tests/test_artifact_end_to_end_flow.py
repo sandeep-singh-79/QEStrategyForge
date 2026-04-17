@@ -89,6 +89,9 @@ class ArtifactEndToEndFlowTests(unittest.TestCase):
                     "Key Integrations:",
                     "- policy platform",
                     "- payment gateway",
+                    "Regulatory Or Compliance Needs:",
+                    "- auditability",
+                    "- privacy-sensitive test data handling",
                     "Platform Notes: Legacy UI still exists around a partly modernized service layer",
                 ]
             ),

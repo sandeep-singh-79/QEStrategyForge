@@ -21,6 +21,7 @@ def apply_rules(classifications: ClassificationResult) -> dict[str, str]:
         "reporting_emphasis": "medium",
         "assumption_mode": "normal",
         "strategy_confidence": "standard",
+        "nfr_depth": "standard",
     }
 
     if project_posture == "greenfield":
@@ -61,5 +62,8 @@ def apply_rules(classifications: ClassificationResult) -> dict[str, str]:
         result["strategy_confidence"] = "conditional"
     elif information_completeness == "partial":
         result["assumption_mode"] = "explicit"
+
+    if classifications.get("nfr_priority") == "high":
+        result["nfr_depth"] = "deep"
 
     return result

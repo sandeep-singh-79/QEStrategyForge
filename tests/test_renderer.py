@@ -266,5 +266,98 @@ class RendererTests(unittest.TestCase):
         self.assertIn("Open Questions", output)
 
 
+# ------------------------------------------------------------------
+# Phase 11B4 — NFR priorities rendering
+# ------------------------------------------------------------------
+
+class NFRRendererTests(unittest.TestCase):
+    def _base_decisions(self) -> dict[str, str]:
+        return {
+            "shift_left_stance": "moderate",
+            "layering_priority": "balanced",
+            "brownfield_transition_strategy": "assess_reuse_stabilize_retire_replace",
+            "automation_adoption_path": "phased_expansion",
+            "ci_cd_posture": "progressive_gates",
+            "governance_depth": "high",
+            "reporting_emphasis": "medium",
+            "assumption_mode": "explicit",
+            "strategy_confidence": "standard",
+            "nfr_depth": "standard",
+        }
+
+    def _base_classifications(self) -> dict[str, str]:
+        return {
+            "project_posture": "brownfield",
+            "automation_maturity": "partial",
+            "ci_cd_maturity": "partial",
+            "system_profile": "api_first",
+            "regulatory_sensitivity": "high",
+            "information_completeness": "partial",
+            "nfr_priority": "standard",
+        }
+
+    def test_renderer_uses_specific_nfr_priorities_when_provided(self) -> None:
+        from ai_test_strategy_generator.renderer import render_strategy
+
+        package = InputPackage(
+            source_path=Path("test.yaml"),
+            raw={},
+            normalized={
+                "project_posture": "brownfield",
+                "delivery_model": "Agile",
+                "system_type": "API",
+                "critical_business_flows": [],
+                "known_constraints": [],
+                "delivery_risks": [],
+                "key_integrations": [],
+                "regulatory_or_compliance_needs": [],
+                "missing_information": [],
+                "human_review_expectations": [],
+                "existing_automation_state": "partial",
+                "ci_cd_maturity": "partial",
+                "ai_adoption_posture": "cautious",
+                "test_data_maturity": "unknown",
+                "environment_maturity": "unknown",
+                "nfr_priorities": ["reliability", "response time", "data privacy"],
+            },
+        )
+
+        output = render_strategy(package, self._base_classifications(), self._base_decisions())
+
+        self.assertIn("Non-Functional Priorities: reliability, response time, data privacy", output)
+
+    def test_renderer_uses_generic_fallback_when_nfr_priorities_absent(self) -> None:
+        from ai_test_strategy_generator.renderer import render_strategy
+
+        package = InputPackage(
+            source_path=Path("test.yaml"),
+            raw={},
+            normalized={
+                "project_posture": "brownfield",
+                "delivery_model": "Agile",
+                "system_type": "API",
+                "critical_business_flows": [],
+                "known_constraints": [],
+                "delivery_risks": [],
+                "key_integrations": [],
+                "regulatory_or_compliance_needs": [],
+                "missing_information": [],
+                "human_review_expectations": [],
+                "existing_automation_state": "partial",
+                "ci_cd_maturity": "partial",
+                "ai_adoption_posture": "cautious",
+                "test_data_maturity": "unknown",
+                "environment_maturity": "unknown",
+                "nfr_priorities": [],
+            },
+        )
+
+        output = render_strategy(package, self._base_classifications(), self._base_decisions())
+
+        self.assertIn("Non-Functional Priorities:", output)
+        self.assertIn("performance", output)
+        self.assertNotIn("Non-Functional Priorities: []", output)
+
+
 if __name__ == "__main__":
     unittest.main()

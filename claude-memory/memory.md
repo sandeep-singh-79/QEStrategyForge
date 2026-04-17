@@ -54,16 +54,19 @@ Current state, decisions, and active priorities for the `ai-test-strategy-genera
 - After Phase 10: merge to master, park repo, transition to intelligent-regression-optimizer.
 
 ## Active Next Work
-- Phase 10 COMPLETE. Commit: `77e492d` on branch `phase-5-artifact-ingestion`. 342 tests passing.
-- Next: merge branch to master, then initialize `intelligent-regression-optimizer` repo.
-- After merge: park this repo. All future work moves to intelligent-regression-optimizer.
-- Prerequisites for Phase 10 satisfied: benchmark_runner.run_assertions() returns total_checks; repair_stats wired to FlowResult and comparison report.
+- Phase 10 COMPLETE. Commits: `77e492d`, `314c776`, `225c707`. 345 tests passing.
+- Phase 11 PLANNED: Content Depth + NFR Support + Self-Benchmark. See `docs/PHASE-11-IMPLEMENTATION-PLAN.md`.
+  - Phase A: Content-depth assertions (independent, start first)
+  - Phase B: NFR vertical slice B1→B5 (input → classifier → rule → prompt/validator/renderer → benchmark)
+  - Phase C: QEStrategyForge self-benchmark (depends on B4)
+- After Phase 11: merge phase-5-artifact-ingestion → master, push, initialize intelligent-regression-optimizer.
 
 ## Blockers
 - No setup blocker.
 - Git in this environment may leave stray lock files in `.git` during some commands; if Git operations fail, inspect lock-file state first.
 
 ## Known Deferred Technical Debt
+- **NFR label is universal, not conditional**: `"Non-Functional Priorities:"` is in `REQUIRED_LABELS` so it's required on every engagement. When `nfr_priorities` is absent the renderer emits a generic fallback line. Fix: make the label conditional on `nfr_priorities` being provided; `nfr_depth` should then gate distinct prompt/renderer behaviour for deep vs standard. Low urgency — LLM path always produces a reasonable value for this label.
 - **Prompt optimization loop**: Phase 10 COMPLETE — binary scoring, 5 mutation strategies, --optimize CLI flag, scoreboard.yaml writer, 342 tests.
 - **Live integration tests for OpenAI and Gemini**: only Ollama has live tests; deferred beyond Phase 10.
 - **Extended artifact types**: `.pdf`, `.docx`, `.xlsx`, `.csv` still not supported; deferred.

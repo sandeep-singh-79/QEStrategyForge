@@ -39,6 +39,7 @@ REQUIRED_LABELS = [
     "Assumption Mode:",
     "Strategy Confidence:",
     "Recommended Immediate Actions:",
+    "Non-Functional Priorities:",
 ]
 
 
