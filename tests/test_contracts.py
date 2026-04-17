@@ -173,5 +173,106 @@ class ModelContractTests(unittest.TestCase):
         self.assertEqual(len(codes), len(set(codes)), f"Duplicate exit code values: {codes}")
 
 
+class RendererValidatorIntegrationTests(unittest.TestCase):
+    """Integration: every committed benchmark input must produce structurally valid output.
+
+    These are canary tests — if any benchmark exercises a renderer branch that
+    produces a misplaced or duplicate label, these catch it immediately.
+    """
+
+    _BENCHMARKS = [
+        "benchmarks/brownfield-partial-automation.input.yaml",
+        "benchmarks/greenfield-low-automation.input.yaml",
+        "benchmarks/incomplete-context.input.yaml",
+        "benchmarks/strong-automation-weak-governance.input.yaml",
+        "benchmarks/nfr-heavy-api.input.yaml",
+        "benchmarks/qestrategyforge-self.input.yaml",
+        "benchmarks/regulated-brownfield-manual-release.input.yaml",
+        "benchmarks/greenfield-aggressive-timeline.input.yaml",
+        "benchmarks/multi-integration-unstable-dependencies.input.yaml",
+    ]
+
+    def _render_and_validate(self, input_path: str):
+        from ai_test_strategy_generator.input_loader import load_input
+        from ai_test_strategy_generator.context_classifier import classify_context
+        from ai_test_strategy_generator.rule_engine import apply_rules
+        from ai_test_strategy_generator.renderer import render_strategy
+        from ai_test_strategy_generator.output_validator import validate_output
+
+        pkg = load_input(Path(input_path))
+        classifications = classify_context(pkg)
+        decisions = apply_rules(classifications)
+        markdown = render_strategy(pkg, classifications, decisions)
+        return validate_output(markdown)
+
+    def test_all_benchmarks_produce_valid_output(self) -> None:
+        """Each benchmark input must produce output that passes structural validation."""
+        failures: dict[str, list[str]] = {}
+        for path in self._BENCHMARKS:
+            result = self._render_and_validate(path)
+            if not result.is_valid:
+                failures[path] = result.errors
+        self.assertEqual(
+            failures,
+            {},
+            f"Benchmarks produced invalid output:\n" +
+            "\n".join(f"  {p}: {errs}" for p, errs in failures.items()),
+        )
+
+    def test_all_benchmarks_produce_no_duplicate_labels(self) -> None:
+        """No required label should appear more than once in any benchmark output."""
+        from ai_test_strategy_generator.output_validator import REQUIRED_LABELS
+        from ai_test_strategy_generator.input_loader import load_input
+        from ai_test_strategy_generator.context_classifier import classify_context
+        from ai_test_strategy_generator.rule_engine import apply_rules
+        from ai_test_strategy_generator.renderer import render_strategy
+
+        duplicates: dict[str, list[str]] = {}
+        for path in self._BENCHMARKS:
+            pkg = load_input(Path(path))
+            c = classify_context(pkg)
+            d = apply_rules(c)
+            md = render_strategy(pkg, c, d)
+            dup = [label for label in REQUIRED_LABELS if md.count(label) > 1]
+            if dup:
+                duplicates[path] = dup
+        self.assertEqual(
+            duplicates,
+            {},
+            f"Duplicate labels found:\n" +
+            "\n".join(f"  {p}: {labels}" for p, labels in duplicates.items()),
+        )
+
+    def test_all_benchmarks_produce_labels_in_correct_sections(self) -> None:
+        """Each required label must appear under its declared section in every benchmark."""
+        from ai_test_strategy_generator.output_validator import LABEL_SECTION_MAP
+        from ai_test_strategy_generator.input_loader import load_input
+        from ai_test_strategy_generator.context_classifier import classify_context
+        from ai_test_strategy_generator.rule_engine import apply_rules
+        from ai_test_strategy_generator.renderer import render_strategy
+        from ai_test_strategy_generator.output_validator import _parse_sections
+
+        misplacements: dict[str, list[str]] = {}
+        for path in self._BENCHMARKS:
+            pkg = load_input(Path(path))
+            c = classify_context(pkg)
+            d = apply_rules(c)
+            md = render_strategy(pkg, c, d)
+            sections = _parse_sections(md)
+            errs = [
+                f"'{label}' not in '{heading}'"
+                for label, heading in LABEL_SECTION_MAP.items()
+                if label in md and label not in sections.get(heading, "")
+            ]
+            if errs:
+                misplacements[path] = errs
+        self.assertEqual(
+            misplacements,
+            {},
+            f"Labels in wrong sections:\n" +
+            "\n".join(f"  {p}: {errs}" for p, errs in misplacements.items()),
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
