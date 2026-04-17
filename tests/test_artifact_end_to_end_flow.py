@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import unittest
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 
@@ -219,6 +220,31 @@ class ArtifactEndToEndFlowTests(unittest.TestCase):
         self.assertFalse(result["success"])
         self.assertEqual(result["exit_code"], 2)
         self.assertTrue(any("Missing required field" in error for error in result["validation_errors"]))
+
+    def test_run_artifact_benchmark_flow_fails_when_mapping_raises(self) -> None:
+        from unittest.mock import patch
+        from ai_test_strategy_generator.artifact_end_to_end_flow import run_artifact_benchmark_flow
+        from ai_test_strategy_generator.artifact_mapping import ArtifactMappingError
+
+        workspace = self.make_workspace()
+        output_path = workspace / "out.md"
+
+        with patch(
+            "ai_test_strategy_generator.artifact_end_to_end_flow.load_artifact_folder",
+            return_value=MagicMock(),
+        ), patch(
+            "ai_test_strategy_generator.artifact_end_to_end_flow.map_artifact_bundle",
+            side_effect=ArtifactMappingError("mapping failed"),
+        ):
+            result = run_artifact_benchmark_flow(
+                workspace,
+                Path("benchmarks/brownfield-partial-automation.assertions.yaml"),
+                output_path,
+            )
+
+        self.assertFalse(result["success"])
+        self.assertEqual(result["exit_code"], 2)
+        self.assertTrue(any("mapping failed" in e for e in result["validation_errors"]))
 
 
 if __name__ == "__main__":
