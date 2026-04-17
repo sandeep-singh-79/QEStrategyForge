@@ -19,16 +19,16 @@ Key capabilities:
 - Benchmark-driven pass/fail evaluation on all scenarios — structural and content-level assertions
 - Side-by-side deterministic vs LLM comparison with `--compare`
 - Karpathy-style prompt optimization loop with binary scoring and 5 mutation strategies (`--optimize`)
-- 342+ automated tests; 100% pass rate required before merge
+- 373+ automated tests; 100% pass rate required before merge
 
 ## Repo Layout
 
 - `src/ai_test_strategy_generator/`
   Deterministic generator code. Key modules:
-  - `context_classifier.py` — classifies 6 engagement dimensions
-  - `rule_engine.py` — deterministic 9-key decision engine
+  - `context_classifier.py` — classifies 7 engagement dimensions
+  - `rule_engine.py` — deterministic 10-key decision engine
   - `renderer.py` — populates the Markdown output template
-  - `output_validator.py` — enforces 14 headings + 18 required labels
+  - `output_validator.py` — enforces 14 headings + 19 required labels
   - `benchmark_runner.py` — runs YAML assertion files against output
   - `llm_flow.py` — LLM-assisted orchestration (prompt build → LLM → repair → validate)
   - `optimizer_score.py` — binary scoring model for prompt optimization
@@ -143,8 +143,8 @@ CLI flags (`--provider`, `--model`, `--base-url`, `--temperature`, `--max-tokens
 
 ## Development Status
 
-As of Phase 9 (2026-04-10):
-- 287 non-live automated tests passing; 6 live Ollama benchmark tests passing
+As of Phase 11 (2026-04-10):
+- 373 non-live automated tests passing; 6 live Ollama benchmark tests passing
 - Live Ollama integration validated with `glm-5:cloud` across all benchmark scenarios
 - OpenAI-compatible and Gemini clients implemented (live tests deferred)
 - Artifact-folder ingestion: 100% statement coverage
@@ -152,6 +152,10 @@ As of Phase 9 (2026-04-10):
 - `FlowResult` contract with typed exit codes across all flow paths
 - Repair statistics tracked per run and surfaced in `--compare` Quality Indicators table
 - Structured logging at all LLM decision points via Python standard `logging`
+- NFR priorities supported as optional input field (`nfr_priorities`) — drives NFR depth classification
+- Content-depth assertions validate strategy specificity beyond structural presence
+- Self-benchmark scenario (`qestrategyforge-self`) exercises the tool on its own architecture
+- Known debt: `Non-Functional Priorities:` label is universal (not yet conditional on NFR input)
 
 ## Publishing Notes
 

@@ -20,6 +20,10 @@ Structured YAML benchmark inputs:
 - `benchmarks/greenfield-low-automation.input.yaml`
 - `benchmarks/incomplete-context.input.yaml`
 - `benchmarks/strong-automation-weak-governance.input.yaml`
+- `benchmarks/nfr-heavy-api.input.yaml` — NFR-heavy API platform scenario
+- `benchmarks/qestrategyforge-self.input.yaml` — self-benchmark of this tool's own architecture
+
+Optional input field `nfr_priorities` can be added to any YAML input to specify non-functional testing priorities (e.g., `performance`, `security`, `resilience`). When provided, the strategy output includes a `Non-Functional Priorities:` section. See [V1-INPUT-TEMPLATE.md](V1-INPUT-TEMPLATE.md) for the full input contract.
 
 Artifact folder inputs:
 - `benchmarks/artifact-brownfield/` (with `benchmarks/artifact-brownfield.assertions.yaml`)
@@ -162,7 +166,7 @@ Live tests only:
 python -m pytest tests/test_live_ollama.py -v
 ```
 
-Expected baseline: 287 non-live tests passing, 6 live Ollama benchmarks passing. Live tests auto-skip when Ollama is unreachable.
+Expected baseline: 373 non-live tests passing, 6 live Ollama benchmarks passing. Live tests auto-skip when Ollama is unreachable.
 
 ## Benchmark Execution Flow
 
@@ -175,11 +179,11 @@ The end-to-end benchmark flows are exercised through:
 The benchmark flow performs:
 1. Input load (YAML file or artifact folder)
 2. Input validation
-3. Context classification (6 dimensions)
-4. Rule application — 9 decision keys
+3. Context classification (7 dimensions)
+4. Rule application — 10 decision keys
 5. Prompt build: scenario template selected from `prompts/v1/` based on classification; base template assembled with engagement context, classifications, decisions, and output contract
 6. LLM synthesis (LLM-assisted) or deterministic renderer (deterministic)
-7. Structural output validation (14 required headings, 18 required labels)
+7. Structural output validation (14 required headings, 19 required labels)
 8. Context-aware repair pass on invalid output — injects actual input and decision values
 9. Deterministic fallback if repair still fails
 10. Benchmark assertion checks (structural + content-level)
@@ -245,6 +249,8 @@ Not included yet:
 | Phase 6 | Bounded LLM integration (prompt builder, LLMClient Protocol, FakeLLMClient, llm_flow, repair pass, CLI `--mode` flag) |
 | Phase 7 | Real provider clients (Ollama, OpenAI, Gemini), client factory, config loader, ProviderConfig, CLI composition root, live Ollama tests, artifact-greenfield benchmark, 100% coverage on artifact modules |
 | Phase 8 | Versioned prompt templates (`prompts/v1/`), per-scenario specialization (greenfield, brownfield, compliance-heavy, incomplete-context), strengthened content-level benchmark assertions, context-aware repair, `--compare` CLI flag, 6/6 live benchmarks passing |
+| Phase 9–10 | Prompt optimization loop (`--optimize`), Karpathy-style binary scoring, 5 mutation strategies, optimizer score module |
+| Phase 11 | NFR priorities input field (`nfr_priorities`), 7th classifier dimension (`nfr_priority`), 10th rule key (`nfr_depth`), content-depth assertions, `nfr-heavy-api` and `qestrategyforge-self` benchmark scenarios, 373 non-live tests |
 
 ## Development Workflow Files
 
