@@ -5,19 +5,15 @@ must_include_labels:
   - "AI Adoption Posture: supportive"
 
 must_include_substrings:
-  - "Target Automation State:"
-  - "quality gate"
-  - "release"
-  - "Reporting Emphasis: high"
+  - "benchmark"
+  - "prompt optimization"
+  - "deterministic fallback"
   - "optimize_and_govern"
-  - "pipeline_native"
-  - "Governance Depth: light"
-  - "checkout"
-  - "order confirmation"
+  - "reliability"
+  - "Non-Functional Priorities:"
 
 must_not_include_substrings:
+  - "Project Posture: greenfield"
   - "Current Automation State: none"
-  - "build the automation foundation from scratch"
   - "foundation_first"
   - "generic test strategy"
-  - "as needed"

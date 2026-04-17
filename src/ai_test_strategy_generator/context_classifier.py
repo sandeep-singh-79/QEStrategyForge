@@ -19,6 +19,7 @@ def classify_context(input_package: InputPackage) -> ClassificationResult:
             data.get("regulatory_or_compliance_needs", []),
         ),
         "information_completeness": _classify_information_completeness(data),
+        "nfr_priority": _classify_nfr_priority(data),
     }
 
 
@@ -70,3 +71,9 @@ def _classify_information_completeness(data: dict[str, object]) -> str:
 
 def _as_text(value: object) -> str:
     return value.strip() if isinstance(value, str) else ""
+
+
+def _classify_nfr_priority(data: dict[str, object]) -> str:
+    nfr = data.get("nfr_priorities", [])
+    priorities = nfr if isinstance(nfr, list) else []
+    return "high" if len(priorities) >= 2 else "standard"

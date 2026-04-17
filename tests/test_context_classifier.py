@@ -94,6 +94,53 @@ class ContextClassifierTests(unittest.TestCase):
 
         self.assertEqual(result["information_completeness"], "incomplete")
 
+    # ------------------------------------------------------------------
+    # Phase 11B2 — nfr_priority classification
+    # ------------------------------------------------------------------
+
+    def test_classify_context_returns_high_nfr_priority_for_three_priorities(self) -> None:
+        from ai_test_strategy_generator.context_classifier import classify_context
+
+        result = classify_context(
+            self.make_package(nfr_priorities=["performance", "security", "compliance"])
+        )
+
+        self.assertEqual(result["nfr_priority"], "high")
+
+    def test_classify_context_returns_high_nfr_priority_for_two_priorities(self) -> None:
+        from ai_test_strategy_generator.context_classifier import classify_context
+
+        result = classify_context(
+            self.make_package(nfr_priorities=["performance", "security"])
+        )
+
+        self.assertEqual(result["nfr_priority"], "high")
+
+    def test_classify_context_returns_standard_nfr_priority_for_zero_priorities(self) -> None:
+        from ai_test_strategy_generator.context_classifier import classify_context
+
+        result = classify_context(self.make_package(nfr_priorities=[]))
+
+        self.assertEqual(result["nfr_priority"], "standard")
+
+    def test_classify_context_returns_standard_nfr_priority_for_one_priority(self) -> None:
+        from ai_test_strategy_generator.context_classifier import classify_context
+
+        result = classify_context(self.make_package(nfr_priorities=["performance"]))
+
+        self.assertEqual(result["nfr_priority"], "standard")
+
+    def test_classify_context_returns_standard_nfr_priority_when_field_absent(self) -> None:
+        from ai_test_strategy_generator.context_classifier import classify_context
+
+        package = self.make_package()
+        # Remove nfr_priorities entirely from normalized data
+        package.normalized.pop("nfr_priorities", None)
+
+        result = classify_context(package)
+
+        self.assertEqual(result["nfr_priority"], "standard")
+
 
 if __name__ == "__main__":
     unittest.main()

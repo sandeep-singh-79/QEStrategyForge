@@ -87,5 +87,72 @@ class InputLoaderTests(unittest.TestCase):
         package = load_input(input_file)
 
         self.assertEqual(package.normalized["delivery_risks"], ["integration instability"])
+
+    # ------------------------------------------------------------------
+    # Phase 11B1 — nfr_priorities as list field
+    # ------------------------------------------------------------------
+
+    def test_load_input_preserves_nfr_priorities_as_list(self) -> None:
+        input_file = self.make_workspace_file()
+        input_file.write_text(
+            "\n".join([
+                "engagement_name: NFR Test",
+                "project_posture: brownfield",
+                "system_type: API",
+                "existing_automation_state: partial",
+                "ci_cd_maturity: partial",
+                "ai_adoption_posture: cautious",
+                "strategy_depth: standard",
+                "nfr_priorities:",
+                "  - performance",
+                "  - security",
+                "  - compliance",
+            ]),
+            encoding="utf-8",
+        )
+
+        package = load_input(input_file)
+
+        self.assertEqual(package.normalized["nfr_priorities"], ["performance", "security", "compliance"])
+
+    def test_load_input_normalizes_nfr_priorities_from_string_to_list(self) -> None:
+        input_file = self.make_workspace_file()
+        input_file.write_text(
+            "\n".join([
+                "engagement_name: NFR Test",
+                "project_posture: brownfield",
+                "system_type: API",
+                "existing_automation_state: partial",
+                "ci_cd_maturity: partial",
+                "ai_adoption_posture: cautious",
+                "strategy_depth: standard",
+                "nfr_priorities: performance",
+            ]),
+            encoding="utf-8",
+        )
+
+        package = load_input(input_file)
+
+        self.assertEqual(package.normalized["nfr_priorities"], ["performance"])
+
+    def test_load_input_nfr_priorities_absent_normalizes_to_empty_list(self) -> None:
+        input_file = self.make_workspace_file()
+        input_file.write_text(
+            "\n".join([
+                "engagement_name: No NFR",
+                "project_posture: brownfield",
+                "system_type: API",
+                "existing_automation_state: partial",
+                "ci_cd_maturity: partial",
+                "ai_adoption_posture: cautious",
+                "strategy_depth: standard",
+            ]),
+            encoding="utf-8",
+        )
+
+        package = load_input(input_file)
+
+        self.assertEqual(package.normalized["nfr_priorities"], [])
+
 if __name__ == "__main__":
     unittest.main()

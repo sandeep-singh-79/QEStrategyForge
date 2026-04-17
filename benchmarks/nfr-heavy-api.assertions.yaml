@@ -1,0 +1,20 @@
+must_include_labels:
+  - "Project Posture: brownfield"
+  - "Current Automation State: partial"
+  - "Current CI/CD Maturity: partial"
+  - "AI Adoption Posture: cautious"
+
+must_include_substrings:
+  - "Non-Functional Priorities:"
+  - "performance"
+  - "security"
+  - "compliance"
+  - "resilience"
+  - "payment authorisation"
+  - "PCI-DSS"
+
+must_not_include_substrings:
+  - "generic test strategy"
+  - "Project Posture: greenfield"
+  - "Current Automation State: none"
+  - "foundation_first"

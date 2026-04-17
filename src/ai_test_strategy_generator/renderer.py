@@ -80,7 +80,7 @@ def build_strategy_document(
                     "Functional Coverage: critical business flows and high-risk integrations",
                     "Regression Coverage: risk-based and posture-aware",
                     "Exploratory Coverage: targeted around uncertainty and legacy behavior",
-                    "Non-Functional Priorities: performance, security, accessibility, and resilience where context requires them",
+                    _nfr_priorities_line(data),
                 ],
             ),
             StrategySection(
@@ -150,6 +150,13 @@ def build_strategy_document(
             ),
         ]
     )
+
+
+def _nfr_priorities_line(data: dict[str, object]) -> str:
+    nfr = data.get("nfr_priorities", [])
+    if isinstance(nfr, list) and nfr:
+        return f"Non-Functional Priorities: {', '.join(str(v) for v in nfr)}"
+    return "Non-Functional Priorities: performance, security, accessibility, and resilience where context requires them"
 
 
 def _join_list(values: object) -> str:

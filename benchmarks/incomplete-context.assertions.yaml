@@ -11,9 +11,12 @@ must_include_substrings:
   - "Strategy Confidence: conditional"
   - "Assumption Mode: explicit"
   - "Governance Depth: high"
+  - "policy issuance"
+  - "auditability"
 
 must_not_include_substrings:
   - "current pipeline gates already enforce release quality"
   - "existing automation estate provides strong baseline"
   - "Strategy Confidence: standard"
   - "optimize_and_govern"
+  - "generic test strategy"
