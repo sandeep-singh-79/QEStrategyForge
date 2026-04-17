@@ -89,8 +89,9 @@ def _parse_sections(markdown: str) -> dict[str, str]:
 def validate_output(markdown: str) -> ValidationResult:
     errors: list[str] = []
 
+    markdown_lines = markdown.splitlines()
     for heading in REQUIRED_HEADINGS:
-        if heading not in markdown:
+        if not any(line.rstrip() == heading for line in markdown_lines):
             errors.append(f"Missing required heading: {heading}")
 
     for label in REQUIRED_LABELS:

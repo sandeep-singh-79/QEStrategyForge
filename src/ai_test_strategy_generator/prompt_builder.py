@@ -61,6 +61,13 @@ def _format_engagement_context(data: dict[str, object]) -> str:
         f"Key Integrations: {_join(data.get('key_integrations', []))}",
         f"Missing Information: {_join(data.get('missing_information', []))}",
         f"Human Review Boundaries: {_join(data.get('human_review_expectations', []))}",
+        f"Release Cadence: {data.get('release_cadence', 'unknown')}",
+        f"QE Capacity: {data.get('qe_capacity', 'unknown')}",
+        f"Team Topology: {data.get('team_topology', 'unknown')}",
+        f"Reporting Audience: {data.get('reporting_audience', 'unknown')}",
+        f"Environment Constraints: {_join(data.get('environment_constraints', []))}",
+        f"Data Privacy Constraints: {_join(data.get('data_privacy_constraints', []))}",
+        f"Target Quality Gates: {_join(data.get('target_quality_gates', []))}",
     ]
     nfr = data.get("nfr_priorities", [])
     if isinstance(nfr, list) and nfr:

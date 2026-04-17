@@ -40,6 +40,8 @@ def apply_rules(classifications: ClassificationResult) -> dict[str, str]:
     elif automation_maturity == "strong":
         result["automation_adoption_path"] = "optimize_and_govern"
         result["reporting_emphasis"] = "high"
+        if project_posture != "greenfield":
+            result["layering_priority"] = "optimize_and_govern"
 
     if ci_cd_maturity in {"none", "manual", "unknown"}:
         result["ci_cd_posture"] = "staged_enablement"
