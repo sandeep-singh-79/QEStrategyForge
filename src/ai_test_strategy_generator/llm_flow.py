@@ -22,6 +22,7 @@ from ai_test_strategy_generator.models import (
     make_flow_result,
 )
 from ai_test_strategy_generator.output_validator import (
+    LABEL_SECTION_MAP,
     REQUIRED_HEADINGS,
     REQUIRED_LABELS,
     validate_output,
@@ -195,7 +196,16 @@ def _repair_output(
     for label in REQUIRED_LABELS:
         if not any(line.strip().startswith(label) for line in existing_lines):
             value = label_values.get(label, "not specified")
-            lines.append(f"{label} {value}")
+            target_heading = LABEL_SECTION_MAP.get(label)
+            inserted = False
+            if target_heading:
+                for i, ln in enumerate(lines):
+                    if ln.strip() == target_heading:
+                        lines.insert(i + 1, f"{label} {value}")
+                        inserted = True
+                        break
+            if not inserted:
+                lines.append(f"{label} {value}")
             labels_injected += 1
 
     # Conditional: add brownfield transition line only when applicable
@@ -240,6 +250,7 @@ def _build_label_values(
         "Automation Adoption Path:": d.get("automation_adoption_path", "not specified"),
         "Governance Depth:": d.get("governance_depth", "not specified"),
         "Reporting Emphasis:": d.get("reporting_emphasis", "not specified"),
+        "Reporting Audience:": str(input_data.get("reporting_audience", "unknown")),
         "Assumption Mode:": d.get("assumption_mode", "not specified"),
         "Strategy Confidence:": d.get("strategy_confidence", "not specified"),
         "Recommended Immediate Actions:": "validate current-state evidence and confirm scope",

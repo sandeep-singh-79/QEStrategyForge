@@ -5,7 +5,6 @@ Uses mocked scoring so tests run without Ollama/OpenAI.
 from __future__ import annotations
 
 import shutil
-import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -23,6 +22,7 @@ from ai_test_strategy_generator.prompt_optimizer import (
 
 _BENCHMARKS_DIR = Path("benchmarks")
 _FAKE_CONFIG = LLMConfig(model="fake")
+_TESTS_TMP = Path(__file__).parent / ".tmp"
 
 # ---------------------------------------------------------------------------
 # BenchmarkSpec
@@ -122,8 +122,9 @@ class OptimizationResultTests(unittest.TestCase):
 class RunOptimizationLoopTests(unittest.TestCase):
 
     def setUp(self) -> None:
-        self._tmpdir = tempfile.mkdtemp()
-        self._prompt_dir = Path(self._tmpdir) / "prompts"
+        self._tmpdir = _TESTS_TMP / f"opt_{id(self)}"
+        self._tmpdir.mkdir(parents=True, exist_ok=True)
+        self._prompt_dir = self._tmpdir / "prompts"
         self._prompt_dir.mkdir()
         (self._prompt_dir / "base.txt").write_text(
             "You MUST include a risk section.\nGenerate the test strategy.\n",
@@ -151,7 +152,7 @@ class RunOptimizationLoopTests(unittest.TestCase):
         Each element in `scores` is a single-benchmark score; wrapped in a list to match signature.
         """
         call_count = {"n": 0}
-        def fake_score_iteration(templates, specs, llm_config, llm_client, timeout):
+        def fake_score_iteration(templates, specs, llm_config, llm_client, timeout, work_dir):
             idx = min(call_count["n"], len(scores) - 1)
             call_count["n"] += 1
             return [scores[idx]], False  # _score_iteration returns (list[int], bool)
@@ -239,7 +240,7 @@ class RunOptimizationLoopTests(unittest.TestCase):
 
     def test_timed_out_iteration_scores_zero(self) -> None:
         call_count = {"n": 0}
-        def fake_score_iteration(templates, specs, llm_config, llm_client, timeout):
+        def fake_score_iteration(templates, specs, llm_config, llm_client, timeout, work_dir):
             idx = min(call_count["n"], 1)
             call_count["n"] += 1
             return ([10], False) if idx == 0 else ([], True)
@@ -330,8 +331,9 @@ class ScoreIterationPipelineTests(unittest.TestCase):
     """
 
     def setUp(self) -> None:
-        self._tmpdir = tempfile.mkdtemp()
-        self._prompt_dir = Path(self._tmpdir) / "prompts"
+        self._tmpdir = _TESTS_TMP / f"score_iter_{id(self)}"
+        self._tmpdir.mkdir(parents=True, exist_ok=True)
+        self._prompt_dir = self._tmpdir / "prompts"
         # Copy installed v1 templates so the flow can find scenario files.
         shutil.copytree(str(_REAL_PROMPTS_V1), str(self._prompt_dir))
         # Inject a unique marker into base.txt so we can detect which file was loaded.
@@ -359,7 +361,8 @@ class ScoreIterationPipelineTests(unittest.TestCase):
             _BENCHMARKS_DIR / "brownfield-partial-automation.assertions.yaml",
         )]
 
-        _score_iteration(templates, specs, LLMConfig(model="fake"), client, timeout_per_iter=60)
+        _score_iteration(templates, specs, LLMConfig(model="fake"), client, timeout_per_iter=60,
+                         work_dir=self._tmpdir / "score_work")
 
         self.assertIn(
             _UNIQUE_MARKER,

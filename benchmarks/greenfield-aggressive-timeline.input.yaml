@@ -1,0 +1,64 @@
+engagement_name: E-Commerce Platform QE Strategy
+domain: Retail
+delivery_model: Agile
+project_posture: greenfield
+timeline_pressure: high
+
+business_goal: Deliver MVP e-commerce platform in 12 weeks with no critical production defects
+quality_goal: Maintain release confidence under aggressive timeline pressure
+release_expectation: Weekly releases from week 6 with CI/CD gates
+
+critical_business_flows:
+  - product search and browse
+  - shopping cart and checkout
+  - payment processing
+  - order confirmation and fulfilment
+
+system_type: API-first with React frontend
+applications_in_scope:
+  - product catalogue service
+  - cart and checkout service
+  - payment gateway integration
+  - order management service
+key_integrations:
+  - third-party payment provider
+  - inventory management system
+platform_notes: Third-party payment provider has unpredictable sandbox reliability
+
+existing_test_process: No established process; greenfield team being assembled
+existing_automation_state: none
+ci_cd_maturity: none
+environment_maturity: weak
+test_data_maturity: weak
+
+known_constraints:
+  - 3 QE engineers available from week 2
+  - deployment pipeline not yet configured
+  - scope creep risk high due to stakeholder pressure
+
+delivery_risks:
+  - timeline pressure may shortcut quality gates
+  - integration instability from third-party payment sandbox
+  - team is newly assembled with no shared testing practices
+
+missing_information:
+  - final API design for payment and order services not confirmed
+  - production infrastructure and scaling targets not defined
+
+nfr_priorities:
+  - performance
+  - security
+
+release_cadence: weekly
+qe_capacity: small
+reporting_audience: management
+
+ai_adoption_posture: cautious
+ai_governance_constraints:
+  - human review required on all AI-assisted test plans
+human_review_expectations:
+  - QE lead review required for all AI-drafted strategy sections
+
+strategy_depth: standard
+primary_audience: QE lead and delivery manager
+desired_output_format: markdown

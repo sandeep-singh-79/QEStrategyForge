@@ -2,7 +2,7 @@
 
 > **Purpose:** Track the active planning and execution steps for the `ai-test-strategy-generator` repository.
 > **Scope:** Session-specific or cycle-specific. Refresh as milestones move and promote durable outcomes into `claude-memory/`.
-> **Last Updated:** 2026-04-16
+> **Last Updated:** 2026-04-17
 
 ---
 
@@ -12,8 +12,8 @@
 |---|---|
 | Capability | ai-test-strategy-generator |
 | Objective | Phase 6 bounded LLM integration — delivered |
-| Current Phase | Phase 10 Complete — Phase 11 Planned |
-| Current Focus | Phase 11: Content Depth + NFR Support + Self-Benchmark |
+| Current Phase | Phase 11 Complete — Phase 12 Planned (Codex review 2026-04-17) |
+| Current Focus | Phase 12: renderer depth, section-aware validation, input schema expansion, NFR rendering, optimizer fix |
 
 ---
 
@@ -56,19 +56,31 @@
 | T33 - Phase 6 Build | Deliver all 7 Phase 6 slices (mode contract through hardening) | Complete | 128 tests green; new modules: prompt_builder, llm_client, llm_flow |
 | T34 - Phase 7 Build | Deliver all 9 Phase 7 slices (real providers, CLI composition root, live tests, coverage hardening) | Complete | 240 tests green + 2 live; new modules: config_loader, ollama_client, openai_client, gemini_client, client_factory; cli.py rewritten as composition root; RuntimeError fallback fixed; glm-5:cloud live validated |
 | T35 - Phase 8 Build | Deliver all 6 Phase 8 slices (prompt engineering, scenario templates, content assertions, --compare) | Complete | 268 tests green + 6 live; prompts/v1/ templates; scenario selection; REQUIRED_LABELS expanded to 18; context-aware repair; comparison.py + --compare CLI flag |
-| T36 - Phase 9 Build | Deliver all 13 Phase 9 slices (hardening: FlowResult, logging, repair fix, test infra, contract tests, repair stats) | Complete | 287 tests green + 6 live; FlowResult/EXIT_*/make_flow_result(); structured logging; line-anchored repair; repair_stats in FlowResult; Quality Indicators in comparison.py |
+| T37 - Phase 10 Build | Deliver all Phase 10 slices (Karpathy optimization loop, binary scoring, 5 mutation strategies, scoreboard) | Complete | 342 tests; optimizer_score.py, prompt_mutations.py, prompt_optimizer.py |
+| T38 - Phase 11 Build | Deliver content-depth assertions, NFR vertical slice, QEStrategyForge self-benchmark | Complete | 373 tests; nfr_priorities field, 7th classifier, 10th rule key, 19th label, 2 new benchmarks |
+| T39 - Phase 12 Plan | Define Phase 12 backlog from Codex review priority actions | Complete | `docs/PHASE-12-IMPLEMENTATION-PLAN.md` created with binary acceptance criteria and Claude handoff prompt |
 
 ---
 
 ## Immediate Next Actions
 
-Phase 11 implementation plan: `docs/PHASE-11-IMPLEMENTATION-PLAN.md`
+Codex review received 2026-04-17. Phase 12 planned. Merge current PR after Phase 12 or as a gating dependency.
 
-1. **Phase A** — Content-Depth Assertions: strengthen 4 assertion YAMLs with engagement-specific must_include/must_not_include, add 3 tests
-2. **Phase B** — NFR Support (B1→B5): input_loader → classifier → rule_engine → prompt/validator/renderer → benchmark. ~20 tests
-3. **Phase C** — QEStrategyForge Self-Benchmark: self.input.yaml + assertions, 4 tests (FakeLLM exit 4 proves specificity)
-4. Verify: ~380+ tests pass, RED proofs for content-depth and NFR, no regressions
-5. After Phase 11: merge phase-5-artifact-ingestion → master, push, initialize intelligent-regression-optimizer
+**Phase 12 priority actions (from Codex review):**
+
+1. **P12-A — Optimizer test portability** (independent, small): replace `tempfile.gettempdir()` in `prompt_optimizer.py` and `test_prompt_optimizer.py` with repo-local writable temp path (`tmp/`, gitignored). ~5 tests.
+
+2. **P12-B — Expand input schema**: add first-class input fields for release cadence, team topology/QE capacity, environments, data/privacy constraints, reporting audience, target quality gates. Extend `input_validator.py`, `models.py`, and classifier/rule_engine to consume them. ~20–30 tests.
+
+3. **P12-C — Deepen deterministic renderer**: use classifications and rule decisions to vary test phase sequencing, recommended test levels by risk, manual/automation boundary, CI/CD gate progression, governance/reporting audience, and immediate next actions. See `renderer.py:60,77,116,143`. ~15–20 tests.
+
+4. **P12-D — NFR per-priority rendering**: when `nfr_depth=deep`, render concrete approach lines per named NFR priority (performance/security/accessibility/resilience) instead of one generic line. Conditional rendering for the NFR label (not universal). ~10 tests.
+
+5. **P12-E — Section-aware validation**: upgrade `validate_output()` from substring presence to: (a) each required label appears exactly once, (b) each label appears in its expected section, (c) forbidden contradictions evaluated by section context. Extend assertion adequacy checks in `benchmark_runner.py`. ~15–20 tests.
+
+6. **P12-F — New benchmark scenarios**: add 4 new scenarios reflecting enterprise QE planning realities: (a) strong-automation-weak-governance, (b) regulated-brownfield-manual-release, (c) incomplete-context-contradictory, (d) multi-integration-unstable-dependencies. ~10–15 tests.
+
+**Order of execution**: P12-A → P12-B → P12-C → P12-D → P12-E → P12-F (B gates C/D; E gates F).
 
 ---
 

@@ -1,0 +1,71 @@
+engagement_name: Core Banking Compliance QE Strategy
+domain: Banking
+delivery_model: Waterfall-Agile hybrid
+project_posture: brownfield
+timeline_pressure: medium
+
+business_goal: Modernise core banking ledger without breaking regulatory reporting
+quality_goal: Maintain audit-ready evidence and prevent defect leakage into production
+release_expectation: Monthly regulated release with full sign-off gate
+critical_business_flows:
+  - account opening
+  - payment processing
+  - regulatory reporting
+  - end-of-day reconciliation
+
+system_type: Legacy monolith with partially extracted microservices
+applications_in_scope:
+  - core banking platform
+  - reporting service
+  - customer portal
+key_integrations:
+  - central bank reporting API
+  - payment clearing network
+  - identity verification service
+platform_notes: Core ledger still on COBOL; new microservices wrap legacy via adapters
+
+existing_test_process: Manual testing with formal test reports required for each release
+existing_automation_state: limited
+ci_cd_maturity: manual
+environment_maturity: moderate
+test_data_maturity: weak
+
+known_constraints:
+  - all test evidence must be auditable
+  - no API mocking in production-equivalent environments
+  - change freeze in Q4 for regulatory reporting period
+
+regulatory_or_compliance_needs:
+  - PCI-DSS
+  - AML/KYC audit trail
+  - central bank reporting accuracy
+
+delivery_risks:
+  - COBOL integration instability
+  - environment provisioning delays
+  - weak regression confidence on shared-state ledger operations
+
+missing_information:
+  - full integration test coverage baseline
+  - production defect leakage trend for last 6 months
+
+nfr_priorities:
+  - compliance
+  - security
+  - performance
+
+release_cadence: monthly
+qe_capacity: medium
+reporting_audience: executive
+
+ai_adoption_posture: restricted
+ai_governance_constraints:
+  - AI-generated artefacts require QE lead sign-off before use
+  - No AI involvement in compliance artefact sign-off
+human_review_expectations:
+  - QE lead review required for all test plans and test evidence
+  - Compliance officer sign-off required before release
+
+strategy_depth: standard
+primary_audience: QE lead and compliance stakeholders
+desired_output_format: markdown

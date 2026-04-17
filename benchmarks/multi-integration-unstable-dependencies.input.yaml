@@ -1,0 +1,68 @@
+engagement_name: Microservices Migration QE Strategy
+domain: Insurance
+delivery_model: Agile
+project_posture: brownfield
+timeline_pressure: medium
+
+business_goal: Migrate monolithic policy platform to event-driven microservices without service disruption
+quality_goal: Maintain existing service reliability while incrementally validating migrated components
+release_expectation: Bi-weekly with parallel running of old and new services during transition
+
+critical_business_flows:
+  - policy issuance
+  - claims notification
+  - premium calculation
+  - document generation
+
+system_type: Legacy monolith being decomposed to microservices
+applications_in_scope:
+  - policy service (legacy)
+  - claims notification service (new)
+  - premium engine (in-flight migration)
+  - document service (new)
+key_integrations:
+  - message broker (Kafka - unstable in test environments)
+  - legacy policy database
+  - third-party document renderer (SLA violations in staging)
+  - external rating agency API (intermittent sandbox availability)
+platform_notes: Kafka message broker has frequent message ordering issues in non-production environments; legacy database schema is undocumented
+
+existing_test_process: Manual regression heavily dependent on test team tribal knowledge
+existing_automation_state: limited
+ci_cd_maturity: partial
+environment_maturity: weak
+test_data_maturity: weak
+
+known_constraints:
+  - Kafka test environment unreliable; integration tests often produce false failures
+  - Third-party rating API has no stable sandbox; tests must be mocked or skipped
+  - Legacy schema undocumented; schema changes break tests without warning
+
+delivery_risks:
+  - unstable integration dependencies causing false test failures
+  - test environment instability masking real defects
+  - legacy schema drift breaking automation without notice
+  - parallel running of old and new services increases scope complexity
+
+missing_information:
+  - event schema documentation for Kafka topics
+  - production message volume and ordering requirements
+  - legacy database ERD
+
+nfr_priorities:
+  - resilience
+  - performance
+
+release_cadence: fortnightly
+qe_capacity: medium
+reporting_audience: engineering
+
+ai_adoption_posture: cautious
+ai_governance_constraints:
+  - AI-assisted strategy sections require QE lead review
+human_review_expectations:
+  - QE lead review required before any published test strategy
+
+strategy_depth: standard
+primary_audience: QE lead and engineering leadership
+desired_output_format: markdown

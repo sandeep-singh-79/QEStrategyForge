@@ -58,6 +58,23 @@ Reusable patterns, lessons learned, and decision rules for the `ai-test-strategy
 - For this repo, completion means tested code plus reported pass/fail and coverage details.
 - TDD discipline is appropriate: red, green, refactor.
 
+15. Structural correctness is not the same as strategy quality.
+- A document that passes heading and label checks can still read like generic boilerplate.
+- For a decision-support tool, the useful signal is how much the output varies with input context, not just whether required markers are present.
+
+16. Substring-only validation creates false confidence in output quality.
+- `label in output` passes even if the label is in the wrong section, duplicated, or disconnected from the surrounding content.
+- Section-aware checks (label appears once, in the correct section, contradictions evaluated by section context) are necessary for meaningful validation.
+
+17. Architect-level decision tools need a richer input model than posture dimensions alone.
+- Fields like release cadence, team topology, environment constraints, data privacy obligations, reporting audience, and quality gate expectations materially change the right strategy.
+- The temptation to start narrow (just posture and maturity) is understandable, but the omission limits how tailored the output can get.
+- Expand the input model deliberately and let the renderer respond to the new dimensions.
+
+18. Test harnesses must be portable under sandboxed and restricted environments.
+- Using OS temp directories (`tempfile.gettempdir()`) is convenient but fragile.
+- Repo-local writable paths (e.g. `tmp/` under project root, gitignored) are more robust and predictable across CI, sandboxes, and local developer machines.
+
 15. The most effective early architecture for this product is classification -> rules -> rendering.
 - That sequence keeps the system explainable and testable.
 - It also separates deterministic posture decisions from later language-generation concerns.

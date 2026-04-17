@@ -3,6 +3,7 @@
 .tracecov-main/
 .tracecov-main-harden/
 tests/.tmp/
+tmp/
 outputs/
 optimization_runs/
 __pycache__/

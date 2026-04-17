@@ -30,6 +30,13 @@ ENUM_FIELDS = {
     "strategy_depth": {"light", "standard", "detailed"},
 }
 
+# Optional fields that are validated when present but not required.
+OPTIONAL_ENUM_FIELDS = {
+    "release_cadence": {"continuous", "weekly", "fortnightly", "monthly", "quarterly", "unknown"},
+    "qe_capacity": {"small", "medium", "large", "unknown"},
+    "reporting_audience": {"engineering", "management", "executive", "mixed", "unknown"},
+}
+
 
 def validate_input(input_package: InputPackage) -> ValidationResult:
     data = input_package.normalized
@@ -47,6 +54,17 @@ def validate_input(input_package: InputPackage) -> ValidationResult:
         value = data.get(field_name)
         if _is_missing(value):
             continue
+        if not isinstance(value, str):
+            errors.append(f"Field '{field_name}' must be a string.")
+            continue
+        if value not in allowed_values:
+            allowed = ", ".join(sorted(allowed_values))
+            errors.append(f"Field '{field_name}' must be one of: {allowed}")
+
+    for field_name, allowed_values in OPTIONAL_ENUM_FIELDS.items():
+        value = data.get(field_name)
+        if value is None or (isinstance(value, str) and value.strip() == ""):
+            continue  # absent optional fields are fine
         if not isinstance(value, str):
             errors.append(f"Field '{field_name}' must be a string.")
             continue

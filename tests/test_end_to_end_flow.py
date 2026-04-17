@@ -180,5 +180,68 @@ class EndToEndFlowTests(unittest.TestCase):
         self.assertEqual(result["exit_code"], 4)
 
 
+class BenchmarkScenarioTests(unittest.TestCase):
+    """P12-F: New benchmark scenarios exercise distinct rendering paths."""
+
+    def make_output_path(self) -> Path:
+        out_dir = Path("tests/.tmp/benchmark-scenarios")
+        out_dir.mkdir(parents=True, exist_ok=True)
+        return out_dir / f"out-{id(self)}.md"
+
+    def test_regulated_brownfield_manual_release_passes(self) -> None:
+        from ai_test_strategy_generator.end_to_end_flow import run_benchmark_flow
+
+        result = run_benchmark_flow(
+            Path("benchmarks/regulated-brownfield-manual-release.input.yaml"),
+            Path("benchmarks/regulated-brownfield-manual-release.assertions.yaml"),
+            self.make_output_path(),
+        )
+
+        self.assertTrue(result["success"], result.get("assertion_errors"))
+        self.assertEqual(result["exit_code"], 0)
+
+    def test_regulated_brownfield_does_not_claim_automated_release_gating(self) -> None:
+        """Manual CI/CD + restricted AI must not produce automated gate release guidance."""
+        from ai_test_strategy_generator.end_to_end_flow import run_benchmark_flow
+
+        assertions_path = Path("tests/.tmp/benchmark-scenarios/regulated-no-gate.assertions.yaml")
+        assertions_path.parent.mkdir(parents=True, exist_ok=True)
+        assertions_path.write_text(
+            "must_not_include_substrings:\n  - \"automated gate results are the primary release signal\"\n",
+            encoding="utf-8",
+        )
+        result = run_benchmark_flow(
+            Path("benchmarks/regulated-brownfield-manual-release.input.yaml"),
+            assertions_path,
+            self.make_output_path(),
+        )
+
+        self.assertTrue(result["success"], result.get("assertion_errors"))
+
+    def test_greenfield_aggressive_timeline_passes(self) -> None:
+        from ai_test_strategy_generator.end_to_end_flow import run_benchmark_flow
+
+        result = run_benchmark_flow(
+            Path("benchmarks/greenfield-aggressive-timeline.input.yaml"),
+            Path("benchmarks/greenfield-aggressive-timeline.assertions.yaml"),
+            self.make_output_path(),
+        )
+
+        self.assertTrue(result["success"], result.get("assertion_errors"))
+        self.assertEqual(result["exit_code"], 0)
+
+    def test_multi_integration_unstable_dependencies_passes(self) -> None:
+        from ai_test_strategy_generator.end_to_end_flow import run_benchmark_flow
+
+        result = run_benchmark_flow(
+            Path("benchmarks/multi-integration-unstable-dependencies.input.yaml"),
+            Path("benchmarks/multi-integration-unstable-dependencies.assertions.yaml"),
+            self.make_output_path(),
+        )
+
+        self.assertTrue(result["success"], result.get("assertion_errors"))
+        self.assertEqual(result["exit_code"], 0)
+
+
 if __name__ == "__main__":
     unittest.main()
