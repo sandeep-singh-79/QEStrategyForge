@@ -9,6 +9,7 @@ Current state, decisions, and active priorities for the `ai-test-strategy-genera
 
 ## Capability Context
 - Repository purpose: build a business-facing AI-native QE system that generates a test strategy from inputs such as RFP scope, requirements, system landscape, and constraints.
+- Product intent clarified on 2026-04-17: this is a decision-support tool for a Test Architect / QA Lead to produce client-specific test strategies from engagement inputs. It is not a general QA strategy generator for autonomous AI agents.
 - Current stage: deterministic MVP with Phase 4 complete.
 - This is the first business-capability-first repository in the broader Agentic Upskilling program.
 
@@ -54,21 +55,33 @@ Current state, decisions, and active priorities for the `ai-test-strategy-genera
 - After Phase 10: merge to master, park repo, transition to intelligent-regression-optimizer.
 
 ## Active Next Work
-- Phase 11 COMPLETE. Commit: `eb8d1f8`. 373 non-live tests passing. Branch: `phase-5-artifact-ingestion`.
-- Docs updated: README, USAGE-GUIDE, LEARNING-GUIDE (NFR section added). All stale counts corrected.
-- Next: force-push branch after amend, then merge `phase-5-artifact-ingestion` → `main`, push to origin.
-- After merge: park this repo, initialize `intelligent-regression-optimizer`.
+- Phase 12 COMPLETE. All 6 review items addressed (P12-A through P12-F). 407 non-live tests passing.
+- Branch: `phase-5-artifact-ingestion`. Ready for PR merge.
+- Next action: merge PR to main, then park this repo and initialize `intelligent-regression-optimizer`.
 
 ## Blockers
 - No setup blocker.
 - Git in this environment may leave stray lock files in `.git` during some commands; if Git operations fail, inspect lock-file state first.
 
 ## Known Deferred Technical Debt
-- **NFR label is universal, not conditional**: `"Non-Functional Priorities:"` is in `REQUIRED_LABELS` so it's required on every engagement. When `nfr_priorities` is absent the renderer emits a generic fallback line. Fix: make the label conditional on `nfr_priorities` being provided; `nfr_depth` should then gate distinct prompt/renderer behaviour for deep vs standard. Low urgency — LLM path always produces a reasonable value for this label.
-- **Prompt optimization loop**: Phase 10 COMPLETE — binary scoring, 5 mutation strategies, --optimize CLI flag, scoreboard.yaml writer, 342 tests.
-- **Live integration tests for OpenAI and Gemini**: only Ollama has live tests; deferred beyond Phase 10.
+
+### Resolved in Phase 12 (2026-04-17)
+- **P12-A COMPLETE**: Optimizer temp portability — repo-local `tmp/optimizer/` path; all 391 tests passing.
+- **P12-B COMPLETE**: Input schema expansion — release_cadence, qe_capacity, reporting_audience, environment/privacy/quality-gate list fields.
+- **P12-C COMPLETE**: Deterministic renderer depth — 5 helper functions vary lifecycle posture, layered strategy, CI/CD, AI usage, next steps by classification.
+- **P12-D COMPLETE**: NFR per-priority rendering — deep mode emits `Non-Functional Priorities: <csv>` summary + `NFR Detail: <priority> — <guidance>` per priority.
+- **P12-E COMPLETE**: Section-aware validation — `LABEL_SECTION_MAP` tracks 20 labels, each verified for placement; duplicates caught; repair inserts into correct sections.
+- **P12-F COMPLETE**: 3 new benchmark scenarios: regulated-brownfield-manual-release, greenfield-aggressive-timeline, multi-integration-unstable-dependencies.
+
+### Still Open
+- **Benchmark assertions**: still substring-only; adequacy/sequencing checks not yet implemented.
+- **Repair mechanism** still produces section-correct injection, but overall quality (coherence, sequencing) of repaired documents is not evaluated.
+
+
+### Pre-existing Deferred Debt
+- **NFR label is universal, not conditional**: `"Non-Functional Priorities:"` required on every engagement; generic fallback when `nfr_priorities` absent. Fix deferred to Phase 12 NFR rendering work.
+- **Live integration tests for OpenAI and Gemini**: only Ollama has live tests; deferred.
 - **Extended artifact types**: `.pdf`, `.docx`, `.xlsx`, `.csv` still not supported; deferred.
-- **Quality scoring model**: superseded by binary scoring in optimization loop.
 - **CODEX.md reference**: deferred from Phase 6, still not created; deferred.
 - **Multi-agent orchestration**: no autonomous agent loop; deferred.
 

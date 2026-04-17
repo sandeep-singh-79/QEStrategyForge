@@ -1,0 +1,23 @@
+must_include_headings:
+  - "## Executive Summary"
+  - "## Engagement Context"
+  - "## Lifecycle Posture"
+  - "## Layered Test Strategy"
+  - "## Automation Strategy"
+  - "## CI/CD And Quality Gates"
+  - "## Recommended Next Steps"
+
+must_include_labels:
+  - "Project Posture: greenfield"
+  - "Current Automation State: none"
+  - "Current CI/CD Maturity: none"
+
+must_include_substrings:
+  - "Recommended Immediate Actions:"
+  - "foundation"
+  - "Reporting Audience: management"
+
+must_not_include_substrings:
+  - "Project Posture: brownfield"
+  - "Brownfield Transition Strategy:"
+  - "automated gate results are the primary release signal"

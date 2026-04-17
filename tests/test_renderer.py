@@ -324,7 +324,150 @@ class NFRRendererTests(unittest.TestCase):
 
         output = render_strategy(package, self._base_classifications(), self._base_decisions())
 
+        # standard depth → single joined line
         self.assertIn("Non-Functional Priorities: reliability, response time, data privacy", output)
+
+    def test_renderer_deep_nfr_renders_per_priority_known_types(self) -> None:
+        """When nfr_depth=deep, each known priority gets its own approach line."""
+        from ai_test_strategy_generator.renderer import render_strategy
+
+        decisions = {**self._base_decisions(), "nfr_depth": "deep"}
+        package = InputPackage(
+            source_path=Path("test.yaml"),
+            raw={},
+            normalized={
+                "project_posture": "brownfield",
+                "delivery_model": "Agile",
+                "system_type": "API",
+                "critical_business_flows": [],
+                "known_constraints": [],
+                "delivery_risks": [],
+                "key_integrations": [],
+                "regulatory_or_compliance_needs": [],
+                "missing_information": [],
+                "human_review_expectations": [],
+                "existing_automation_state": "partial",
+                "ci_cd_maturity": "partial",
+                "ai_adoption_posture": "cautious",
+                "test_data_maturity": "unknown",
+                "environment_maturity": "unknown",
+                "nfr_priorities": ["performance", "security"],
+            },
+        )
+
+        output = render_strategy(package, self._base_classifications(), decisions)
+
+        # Summary line lists all priorities; detail lines use NFR Detail: prefix
+        self.assertIn("Non-Functional Priorities: performance, security", output)
+        self.assertIn("NFR Detail: performance", output)
+        self.assertIn("SLA", output)
+        self.assertIn("NFR Detail: security", output)
+        self.assertIn("SAST", output)
+
+    def test_renderer_deep_nfr_renders_unknown_priority_with_generic_line(self) -> None:
+        """Unknown priority names get a generic approach line in deep mode."""
+        from ai_test_strategy_generator.renderer import render_strategy
+
+        decisions = {**self._base_decisions(), "nfr_depth": "deep"}
+        package = InputPackage(
+            source_path=Path("test.yaml"),
+            raw={},
+            normalized={
+                "project_posture": "brownfield",
+                "delivery_model": "Agile",
+                "system_type": "API",
+                "critical_business_flows": [],
+                "known_constraints": [],
+                "delivery_risks": [],
+                "key_integrations": [],
+                "regulatory_or_compliance_needs": [],
+                "missing_information": [],
+                "human_review_expectations": [],
+                "existing_automation_state": "partial",
+                "ci_cd_maturity": "partial",
+                "ai_adoption_posture": "cautious",
+                "test_data_maturity": "unknown",
+                "environment_maturity": "unknown",
+                "nfr_priorities": ["internationalisation"],
+            },
+        )
+
+        output = render_strategy(package, self._base_classifications(), decisions)
+
+        # Summary line has the unknown priority; detail line uses NFR Detail: prefix
+        self.assertIn("Non-Functional Priorities: internationalisation", output)
+        self.assertIn("NFR Detail: internationalisation", output)
+        self.assertIn("pipeline gates", output)
+
+    def test_renderer_deep_nfr_with_no_priorities_uses_fallback(self) -> None:
+        """Deep depth but empty priorities list → fallback line, not per-priority expansion."""
+        from ai_test_strategy_generator.renderer import render_strategy
+
+        decisions = {**self._base_decisions(), "nfr_depth": "deep"}
+        package = InputPackage(
+            source_path=Path("test.yaml"),
+            raw={},
+            normalized={
+                "project_posture": "brownfield",
+                "delivery_model": "Agile",
+                "system_type": "API",
+                "critical_business_flows": [],
+                "known_constraints": [],
+                "delivery_risks": [],
+                "key_integrations": [],
+                "regulatory_or_compliance_needs": [],
+                "missing_information": [],
+                "human_review_expectations": [],
+                "existing_automation_state": "partial",
+                "ci_cd_maturity": "partial",
+                "ai_adoption_posture": "cautious",
+                "test_data_maturity": "unknown",
+                "environment_maturity": "unknown",
+                "nfr_priorities": [],
+            },
+        )
+
+        output = render_strategy(package, self._base_classifications(), decisions)
+
+        self.assertIn("Non-Functional Priorities:", output)
+        self.assertIn("performance", output)
+
+    def test_renderer_deep_nfr_all_six_known_priorities(self) -> None:
+        """All six named priorities each produce a distinct non-generic approach line."""
+        from ai_test_strategy_generator.renderer import render_strategy
+
+        decisions = {**self._base_decisions(), "nfr_depth": "deep"}
+        package = InputPackage(
+            source_path=Path("test.yaml"),
+            raw={},
+            normalized={
+                "project_posture": "brownfield",
+                "delivery_model": "Agile",
+                "system_type": "API",
+                "critical_business_flows": [],
+                "known_constraints": [],
+                "delivery_risks": [],
+                "key_integrations": [],
+                "regulatory_or_compliance_needs": [],
+                "missing_information": [],
+                "human_review_expectations": [],
+                "existing_automation_state": "partial",
+                "ci_cd_maturity": "partial",
+                "ai_adoption_posture": "cautious",
+                "test_data_maturity": "unknown",
+                "environment_maturity": "unknown",
+                "nfr_priorities": ["performance", "security", "resilience", "accessibility", "compliance", "privacy"],
+            },
+        )
+
+        output = render_strategy(package, self._base_classifications(), decisions)
+
+        self.assertIn("SLA", output)        # performance
+        self.assertIn("SAST", output)       # security
+        self.assertIn("chaos", output)      # resilience
+        self.assertIn("WCAG", output)       # accessibility
+        self.assertIn("traceability", output)  # compliance
+        self.assertIn("masking", output)    # privacy
 
     def test_renderer_uses_generic_fallback_when_nfr_priorities_absent(self) -> None:
         from ai_test_strategy_generator.renderer import render_strategy
@@ -357,6 +500,139 @@ class NFRRendererTests(unittest.TestCase):
         self.assertIn("Non-Functional Priorities:", output)
         self.assertIn("performance", output)
         self.assertNotIn("Non-Functional Priorities: []", output)
+
+
+class RendererDepthTests(unittest.TestCase):
+    """P12-C: Verify that renderer sections vary based on classifications and decisions."""
+
+    def _make_package(self, overrides: dict | None = None) -> "InputPackage":
+        from ai_test_strategy_generator.models import InputPackage
+
+        normalized: dict = {
+            "project_posture": "greenfield",
+            "delivery_model": "Agile",
+            "system_type": "API-first",
+            "critical_business_flows": ["user registration", "order placement"],
+            "existing_automation_state": "none",
+            "ci_cd_maturity": "none",
+            "ai_adoption_posture": "cautious",
+            "test_data_maturity": "unknown",
+            "environment_maturity": "unknown",
+            "known_constraints": [],
+            "delivery_risks": [],
+            "key_integrations": [],
+            "regulatory_or_compliance_needs": [],
+            "missing_information": [],
+            "human_review_expectations": ["QE lead review required"],
+            "nfr_priorities": [],
+            "target_quality_gates": [],
+        }
+        if overrides:
+            normalized.update(overrides)
+        return InputPackage(source_path=Path("input.yaml"), raw={}, normalized=normalized)
+
+    def _base_decisions(self) -> dict[str, str]:
+        return {
+            "automation_strategy": "automate_critical_paths",
+            "automation_adoption_path": "foundation_first",
+            "layering_priority": "lower_layers_first",
+            "ci_cd_posture": "pipeline_native",
+            "shift_left_stance": "strong",
+            "governance_depth": "medium",
+            "reporting_emphasis": "standard",
+            "nfr_depth": "standard",
+            "strategy_confidence": "standard",
+            "assumption_mode": "explicit",
+        }
+
+    def _base_classifications(self) -> dict[str, str]:
+        return {
+            "project_posture": "greenfield",
+            "automation_maturity": "none",
+            "ci_cd_maturity": "none",
+            "system_profile": "api_first",
+            "regulatory_sensitivity": "low",
+            "information_completeness": "complete",
+            "release_frequency": "standard",
+        }
+
+    def test_brownfield_posture_includes_stabilise_language(self) -> None:
+        from ai_test_strategy_generator.renderer import render_strategy
+
+        package = self._make_package({"project_posture": "brownfield", "existing_automation_state": "partial"})
+        classifications = {**self._base_classifications(), "project_posture": "brownfield"}
+        output = render_strategy(package, classifications, self._base_decisions())
+
+        self.assertIn("stabilise", output.lower())
+
+    def test_staged_enablement_does_not_claim_automated_release_gating(self) -> None:
+        from ai_test_strategy_generator.renderer import render_strategy
+
+        package = self._make_package({"ci_cd_maturity": "none"})
+        classifications = {**self._base_classifications(), "ci_cd_maturity": "none"}
+        decisions = {**self._base_decisions(), "ci_cd_posture": "staged_enablement"}
+        output = render_strategy(package, classifications, decisions)
+
+        # staged_enablement with no CI → manual sign-off described, not automated gates
+        self.assertIn("manual", output.lower())
+        self.assertNotIn("automated gate results are the primary release signal", output)
+
+    def test_incomplete_context_next_steps_include_discovery(self) -> None:
+        from ai_test_strategy_generator.renderer import render_strategy
+
+        package = self._make_package({"missing_information": ["scope unclear", "architecture unknown"]})
+        classifications = {**self._base_classifications(), "information_completeness": "incomplete"}
+        output = render_strategy(package, classifications, self._base_decisions())
+
+        self.assertIn("discovery", output.lower())
+
+    def test_restricted_ai_posture_limits_allowed_uses(self) -> None:
+        from ai_test_strategy_generator.renderer import render_strategy
+
+        package = self._make_package({"ai_adoption_posture": "restricted"})
+        output = render_strategy(package, self._base_classifications(), self._base_decisions())
+
+        self.assertIn("restricted", output.lower())
+        self.assertNotIn("reporting summarization", output)
+
+    def test_supportive_ai_posture_broadens_allowed_uses(self) -> None:
+        from ai_test_strategy_generator.renderer import render_strategy
+
+        package = self._make_package({"ai_adoption_posture": "supportive"})
+        output = render_strategy(package, self._base_classifications(), self._base_decisions())
+
+        self.assertIn("reporting summarization", output.lower())
+
+    def test_high_release_frequency_emphasises_automated_gate_as_release_signal(self) -> None:
+        from ai_test_strategy_generator.renderer import render_strategy
+
+        package = self._make_package()
+        classifications = {**self._base_classifications(), "release_frequency": "high"}
+        decisions = {**self._base_decisions(), "ci_cd_posture": "pipeline_native", "reporting_emphasis": "high"}
+        output = render_strategy(package, classifications, decisions)
+
+        self.assertIn("automated gate", output.lower())
+
+    def test_incomplete_context_adds_discovery_lifecycle_checkpoint(self) -> None:
+        from ai_test_strategy_generator.renderer import render_strategy
+
+        package = self._make_package()
+        classifications = {**self._base_classifications(), "information_completeness": "incomplete"}
+        output = render_strategy(package, classifications, self._base_decisions())
+
+        self.assertIn("discovery", output.lower())
+
+    def test_greenfield_next_steps_include_bottom_up_language(self) -> None:
+        from ai_test_strategy_generator.renderer import render_strategy
+
+        package = self._make_package()
+        output = render_strategy(package, self._base_classifications(), self._base_decisions())
+
+        # greenfield medium-term should mention bottom-up / pyramid
+        self.assertTrue(
+            "pyramid" in output.lower() or "bottom-up" in output.lower(),
+            msg="Expected pyramid/bottom-up language in greenfield next steps",
+        )
 
 
 if __name__ == "__main__":

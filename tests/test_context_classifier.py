@@ -141,6 +141,56 @@ class ContextClassifierTests(unittest.TestCase):
 
         self.assertEqual(result["nfr_priority"], "standard")
 
+    # ------------------------------------------------------------------
+    # P12-B — release_frequency classification
+    # ------------------------------------------------------------------
+
+    def test_classify_continuous_cadence_as_high_frequency(self) -> None:
+        from ai_test_strategy_generator.context_classifier import classify_context
+
+        result = classify_context(self.make_package(release_cadence="continuous"))
+
+        self.assertEqual(result["release_frequency"], "high")
+
+    def test_classify_weekly_cadence_as_high_frequency(self) -> None:
+        from ai_test_strategy_generator.context_classifier import classify_context
+
+        result = classify_context(self.make_package(release_cadence="weekly"))
+
+        self.assertEqual(result["release_frequency"], "high")
+
+    def test_classify_monthly_cadence_as_standard_frequency(self) -> None:
+        from ai_test_strategy_generator.context_classifier import classify_context
+
+        result = classify_context(self.make_package(release_cadence="monthly"))
+
+        self.assertEqual(result["release_frequency"], "standard")
+
+    def test_classify_quarterly_cadence_as_low_frequency(self) -> None:
+        from ai_test_strategy_generator.context_classifier import classify_context
+
+        result = classify_context(self.make_package(release_cadence="quarterly"))
+
+        self.assertEqual(result["release_frequency"], "low")
+
+    def test_classify_absent_cadence_as_unknown_frequency(self) -> None:
+        from ai_test_strategy_generator.context_classifier import classify_context
+
+        result = classify_context(self.make_package())  # no release_cadence
+
+        self.assertEqual(result["release_frequency"], "unknown")
+
+    def test_high_release_frequency_sets_pipeline_native_ci_cd(self) -> None:
+        """Continuous cadence should drive pipeline_native CI/CD posture via rule engine."""
+        from ai_test_strategy_generator.context_classifier import classify_context
+        from ai_test_strategy_generator.rule_engine import apply_rules
+
+        classifications = classify_context(self.make_package(release_cadence="continuous"))
+        decisions = apply_rules(classifications)
+
+        self.assertEqual(decisions["ci_cd_posture"], "pipeline_native")
+        self.assertEqual(decisions["reporting_emphasis"], "high")
+
 
 if __name__ == "__main__":
     unittest.main()

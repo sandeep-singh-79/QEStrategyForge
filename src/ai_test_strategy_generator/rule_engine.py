@@ -10,6 +10,7 @@ def apply_rules(classifications: ClassificationResult) -> dict[str, str]:
     system_profile = classifications.get("system_profile", "")
     regulatory_sensitivity = classifications.get("regulatory_sensitivity", "")
     information_completeness = classifications.get("information_completeness", "")
+    release_frequency = classifications.get("release_frequency", "unknown")
 
     result = {
         "shift_left_stance": "moderate",
@@ -65,5 +66,12 @@ def apply_rules(classifications: ClassificationResult) -> dict[str, str]:
 
     if classifications.get("nfr_priority") == "high":
         result["nfr_depth"] = "deep"
+
+    if release_frequency == "high":
+        result["ci_cd_posture"] = "pipeline_native"
+        result["reporting_emphasis"] = "high"
+    elif release_frequency == "low":
+        if result["ci_cd_posture"] == "staged_enablement":
+            result["ci_cd_posture"] = "staged_enablement"  # keep, but note low cadence
 
     return result

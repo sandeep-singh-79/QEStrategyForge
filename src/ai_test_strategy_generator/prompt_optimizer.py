@@ -34,8 +34,6 @@ from __future__ import annotations
 
 import logging
 import shutil
-import signal
-import tempfile
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -54,6 +52,10 @@ _log = logging.getLogger(__name__)
 
 # Template file names that can be mutated (only base.txt by default in v1)
 _MUTABLE_TEMPLATES = ("base.txt",)
+
+# Repo-local writable fallback for temp scoring work when output_dir is not provided.
+# Resolves to <repo_root>/tmp/optimizer relative to this module's install location.
+_DEFAULT_WORK_DIR: Path = Path(__file__).parent.parent.parent / "tmp" / "optimizer"
 
 
 @dataclass
@@ -167,26 +169,27 @@ def _score_iteration(
     llm_config: LLMConfig,
     llm_client: LLMClient,
     timeout_per_iter: int,
+    work_dir: Path,
 ) -> tuple[list[int], bool]:
     """Run all benchmarks against the given templates and return (scores, timed_out).
 
-    Templates are written to a temporary directory so llm_flow can load them
-    via the standard template_loader path.
+    Templates are written to work_dir so llm_flow can load them via the
+    standard template_loader path.  work_dir must be writable; the prompts
+    subdirectory is cleaned up after scoring.
     """
-    with tempfile.TemporaryDirectory() as tmpdir:
-        tmp_prompt_dir = Path(tmpdir) / "prompts" / "active"
-        _write_templates(templates, tmp_prompt_dir)
+    tmp_prompt_dir = work_dir / "prompts" / "active"
+    _write_templates(templates, tmp_prompt_dir)
 
-        per_benchmark_scores: list[int] = []
-        deadline = time.monotonic() + timeout_per_iter
+    per_benchmark_scores: list[int] = []
+    deadline = time.monotonic() + timeout_per_iter
 
+    try:
         for spec in specs:
             if time.monotonic() > deadline:
                 _log.warning("Iteration timed out after %d s", timeout_per_iter)
                 return per_benchmark_scores, True
 
-            with tempfile.NamedTemporaryFile(suffix=".md", delete=False) as out_f:
-                out_path = Path(out_f.name)
+            out_path = work_dir / f"out_{spec.input_path.stem}.md"
 
             try:
                 result = run_llm_benchmark_flow(
@@ -212,6 +215,8 @@ def _score_iteration(
                 score,
                 result["exit_code"],
             )
+    finally:
+        shutil.rmtree(tmp_prompt_dir, ignore_errors=True)
 
     return per_benchmark_scores, False
 
@@ -261,11 +266,13 @@ def run_optimization_loop(
               len(specs), config.n_iterations)
 
     baseline_templates = _load_templates(config.prompt_dir)
+    _work_root = (output_dir / "_work") if output_dir else _DEFAULT_WORK_DIR
     if output_dir:
         _copy_prompt_dir(config.prompt_dir, output_dir / "iter_0")
 
     baseline_scores, timed_out = _score_iteration(
-        baseline_templates, specs, llm_config, llm_client, config.timeout_per_iter
+        baseline_templates, specs, llm_config, llm_client, config.timeout_per_iter,
+        work_dir=_work_root / "iter_0",
     )
     baseline_agg = aggregate_scores(baseline_scores)
 
@@ -305,7 +312,8 @@ def run_optimization_loop(
                 break
 
         scores, timed_out = _score_iteration(
-            mutated_templates, specs, llm_config, llm_client, config.timeout_per_iter
+            mutated_templates, specs, llm_config, llm_client, config.timeout_per_iter,
+            work_dir=_work_root / f"iter_{i}",
         )
         agg = aggregate_scores(scores) if not timed_out else 0
 
@@ -357,6 +365,7 @@ def run_optimization_loop(
     elif improvement_delta == 0:
         _log.info("No improvement found after %d iterations.", config.n_iterations)
 
+    shutil.rmtree(_work_root, ignore_errors=True)
     return OptimizationResult(
         baseline_aggregate=baseline_agg,
         best_aggregate=best_aggregate,

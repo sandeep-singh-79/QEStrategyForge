@@ -20,6 +20,7 @@ def classify_context(input_package: InputPackage) -> ClassificationResult:
         ),
         "information_completeness": _classify_information_completeness(data),
         "nfr_priority": _classify_nfr_priority(data),
+        "release_frequency": _classify_release_frequency(_as_text(data.get("release_cadence"))),
     }
 
 
@@ -77,3 +78,14 @@ def _classify_nfr_priority(data: dict[str, object]) -> str:
     nfr = data.get("nfr_priorities", [])
     priorities = nfr if isinstance(nfr, list) else []
     return "high" if len(priorities) >= 2 else "standard"
+
+
+def _classify_release_frequency(release_cadence: str) -> str:
+    """Map release_cadence to high/standard/low frequency classification."""
+    if release_cadence in {"continuous", "weekly"}:
+        return "high"
+    if release_cadence in {"fortnightly", "monthly"}:
+        return "standard"
+    if release_cadence in {"quarterly"}:
+        return "low"
+    return "unknown"

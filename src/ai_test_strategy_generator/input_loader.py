@@ -19,6 +19,9 @@ LIST_FIELDS = {
     "ai_governance_constraints",
     "human_review_expectations",
     "nfr_priorities",
+    "environment_constraints",
+    "data_privacy_constraints",
+    "target_quality_gates",
 }
 
 

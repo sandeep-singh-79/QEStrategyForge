@@ -15,6 +15,14 @@ In-progress analysis, temporary notes, open questions, and working context for t
 - Implementation plan should cover full test lifecycle, automation strategy, reporting, AI impact, edge cases, and learning documentation.
 - Additional explicit dimensions requested: shift-left strategy, layered approach, greenfield vs brownfield posture, existing automation state, automation end-goal, and CI/CD integration.
 - User asked whether a Karpathy-style autoresearch refinement loop can be applied here and whether current binary validations are sufficient.
+- 2026-04-17 review note: optimizer-related tests rely on OS temp directories and fail in this environment with `PermissionError`; test harness should prefer repo-local writable temp paths for portability.
+- 2026-04-17: created `docs/PHASE-12-IMPLEMENTATION-PLAN.md` so implementation can proceed without losing the binary-evaluation design rule.
+- 2026-04-17 Codex review summary:
+  - Strengths confirmed: pipeline shape (input→classify→rules→render→validate→assert), deterministic fallback, machine-checkable output contract, benchmark contradiction checks.
+  - 6 priority actions: (1) deepen renderer, (2) section-aware validation and assertions, (3) expand input schema, (4) NFR per-priority rendering, (5) new enterprise tradeoff benchmarks, (6) optimizer temp-dir portability fix.
+  - Core weakness: output reads like a structurally correct template, not a client-ready strategy draft. Sections vary too little with engagement context.
+  - Validation weakness: substring presence does not guarantee structural or logical correctness.
+  - Input weakness: missing release model, team topology, environments, reporting audience, quality gates, data/privacy constraints.
 
 ## Open Questions
 - Resolved: Phase 7 direction → real LLM providers. Completed.
@@ -23,6 +31,7 @@ In-progress analysis, temporary notes, open questions, and working context for t
 - Resolved: Phase 10 direction → Karpathy optimization loop. Decision made 2026-04-16.
 - Open: should prompt mutation also modify scenario templates, or only base.txt? → Decided: base.txt only for Phase 10. Scenario templates unchanged.
 - Closed: Phase 10 complete 2026-04-16. 342 tests. Commit 77e492d.
+- Open (2026-04-17): should Phase 12 be a single large PR or sliced per priority action? → Recommendation: slice by concern. (1) optimizer fix is independent and small — do first. (2) input schema expansion gates renderer depth. (3) renderer depth and NFR rendering follow. (4) validation upgrade follows renderer. (5) benchmark scenarios last.
 
 ## Phase Status Snapshot
 - Phase 1 complete

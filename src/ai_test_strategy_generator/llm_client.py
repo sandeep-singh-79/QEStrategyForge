@@ -87,6 +87,7 @@ Environment Stability: controlled environments with stable configurations
 ## Defect, Triage, And Reporting Model
 Defect Model: risk-based triage with severity classification
 Reporting Emphasis: medium
+Reporting Audience: mixed
 Governance Depth: high
 
 ## AI Usage Model
@@ -97,7 +98,6 @@ AI Tooling: limited to low-risk test generation assistance
 ## Assumptions, Gaps, And Open Questions
 Missing Information: none
 Assumption Mode: explicit
-Strategy Confidence: standard
 Strategy Confidence Note: based on provided context
 
 ## Recommended Next Steps
