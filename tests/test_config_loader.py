@@ -162,6 +162,40 @@ class TestLoadConfig(unittest.TestCase):
             result = load_config(None)
         self.assertEqual(result["max_tokens"], 1024)
 
+    def test_invalid_yaml_warns_and_uses_defaults(self) -> None:
+        import tempfile
+        import warnings
+
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".yaml", delete=False
+        ) as f:
+            f.write(": invalid: yaml: {")
+            tmp_path = Path(f.name)
+        try:
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter("always")
+                result = load_config(tmp_path)
+            self.assertEqual(result["provider"], "ollama")  # fell back to defaults
+            self.assertTrue(
+                any("Could not parse" in str(w.message) for w in caught),
+                "Expected a warning about unparseable config",
+            )
+        finally:
+            tmp_path.unlink()
+
+    def test_bad_env_var_cast_warns_and_keeps_previous_value(self) -> None:
+        import warnings
+
+        with patch.dict(os.environ, {"STRATEGY_LLM_TEMPERATURE": "not-a-float"}):
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter("always")
+                result = load_config(None)
+        self.assertAlmostEqual(result["temperature"], 0.0)  # default retained
+        self.assertTrue(
+            any("STRATEGY_LLM_TEMPERATURE" in str(w.message) for w in caught),
+            "Expected a warning about bad env var cast",
+        )
+
 
 class TestBuildProviderConfig(unittest.TestCase):
     """Integration between load_config and ProviderConfig construction."""
