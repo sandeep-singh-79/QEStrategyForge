@@ -645,5 +645,197 @@ class RendererConsistencyTests(unittest.TestCase):
         )
 
 
+# ---------------------------------------------------------------------------
+# 7. System profile → renderer coverage layer text
+# ---------------------------------------------------------------------------
+
+class SystemProfileRenderingTests(unittest.TestCase):
+    """system_profile classification is consumed DIRECTLY by the renderer (not via
+    decisions), so rule-engine tests do not catch renderer regressions here.
+
+    If a renderer helper stops branching on system_profile, or a new profile value
+    is added to the classifier without a matching renderer branch, these tests fail.
+    """
+
+    _NORMALIZED_BASE: dict = {
+        "delivery_model": "Agile",
+        "system_type": "API",
+        "critical_business_flows": [],
+        "known_constraints": [],
+        "delivery_risks": [],
+        "key_integrations": [],
+        "regulatory_or_compliance_needs": [],
+        "missing_information": [],
+        "human_review_expectations": [],
+        "existing_automation_state": "partial",
+        "ci_cd_maturity": "partial",
+        "ai_adoption_posture": "cautious",
+        "test_data_maturity": "unknown",
+        "environment_maturity": "unknown",
+        "nfr_priorities": [],
+        "environment_constraints": [],
+        "data_privacy_constraints": [],
+        "target_quality_gates": [],
+    }
+
+    def _render_with_profile(self, system_profile: str, project_posture: str = "brownfield") -> str:
+        from ai_test_strategy_generator.models import InputPackage
+        from ai_test_strategy_generator.rule_engine import apply_rules
+        from ai_test_strategy_generator.renderer import render_strategy
+
+        normalized = {**self._NORMALIZED_BASE, "project_posture": project_posture}
+        pkg = InputPackage(source_path=Path("input.yaml"), raw={}, normalized=normalized)
+        classifications = {
+            "project_posture": project_posture,
+            "automation_maturity": "partial",
+            "ci_cd_maturity": "partial",
+            "system_profile": system_profile,
+            "regulatory_sensitivity": "low",
+            "information_completeness": "complete",
+            "release_frequency": "unknown",
+            "nfr_priority": "standard",
+        }
+        decisions = apply_rules(classifications)
+        return render_strategy(pkg, classifications, decisions)
+
+    def test_api_first_brownfield_produces_api_coverage_layer(self) -> None:
+        md = self._render_with_profile("api_first", project_posture="brownfield")
+        # brownfield api_first → layering=balanced → else branch → api_first text
+        self.assertTrue(
+            "API" in md,
+            "api_first system_profile must produce API-oriented coverage layer text",
+        )
+
+    def test_api_first_greenfield_produces_lower_layers_first(self) -> None:
+        md = self._render_with_profile("api_first", project_posture="greenfield")
+        # greenfield + api_first → rule engine sets layering=lower_layers_first
+        self.assertIn("Layering Priority: lower_layers_first", md)
+
+    def test_legacy_profile_produces_stabilize_coverage_language(self) -> None:
+        md = self._render_with_profile("legacy", project_posture="brownfield")
+        # legacy → rule engine sets layering=stabilize_lower_layers_then_ui
+        # renderer's elif branch produces "stabiliz" language
+        self.assertTrue(
+            "stabilize" in md.lower() or "stabilise" in md.lower(),
+            "legacy system_profile must produce stabilisation layer language",
+        )
+
+    def test_data_heavy_profile_produces_data_pipeline_coverage_layer(self) -> None:
+        # data_heavy has NO rule engine branch — it falls through to the renderer else branch
+        # where system_profile is read directly.  This profile has no benchmark; this is the
+        # only test guarding the data_heavy → "data-pipeline" renderer branch.
+        md = self._render_with_profile("data_heavy", project_posture="brownfield")
+        self.assertIn(
+            "data-pipeline",
+            md,
+            "data_heavy system_profile must produce data-pipeline coverage layer text",
+        )
+
+    def test_known_system_profiles_all_differ_in_coverage_layer_text(self) -> None:
+        profiles = ["api_first", "legacy", "data_heavy", "general"]
+        coverage_lines: dict[str, str] = {}
+        for p in profiles:
+            md = self._render_with_profile(p, project_posture="brownfield")
+            line = next(
+                (l for l in md.splitlines() if "Recommended Coverage Layers:" in l), ""
+            )
+            coverage_lines[p] = line
+        # All 4 profiles must produce distinct layer guidance
+        self.assertEqual(
+            len(set(coverage_lines.values())),
+            len(profiles),
+            f"Expected distinct coverage layer text for each profile; got: {coverage_lines}",
+        )
+
+
+# ---------------------------------------------------------------------------
+# 8. NFR depth control decision invariants
+# ---------------------------------------------------------------------------
+
+class NfrDepthInvariantTests(unittest.TestCase):
+    """nfr_depth is a control decision — it governs rendering depth rather than
+    appearing literally in the output.  These tests assert the full invariant chain:
+    nfr_priority classification → nfr_depth decision → rendered NFR Detail lines.
+
+    This chain is excluded from RuleRendererIntegrationTests (which checks literal
+    decision value strings) so it needs its own explicit coverage here.
+    """
+
+    def test_nfr_priority_high_sets_nfr_depth_deep(self) -> None:
+        from ai_test_strategy_generator.rule_engine import apply_rules
+        d = apply_rules({"nfr_priority": "high", **{
+            k: "unknown" for k in [
+                "project_posture", "automation_maturity", "ci_cd_maturity",
+                "system_profile", "regulatory_sensitivity",
+                "information_completeness", "release_frequency",
+            ]
+        }})
+        self.assertEqual(d["nfr_depth"], "deep")
+
+    def test_nfr_priority_standard_keeps_nfr_depth_standard(self) -> None:
+        from ai_test_strategy_generator.rule_engine import apply_rules
+        d = apply_rules({"nfr_priority": "standard", **{
+            k: "unknown" for k in [
+                "project_posture", "automation_maturity", "ci_cd_maturity",
+                "system_profile", "regulatory_sensitivity",
+                "information_completeness", "release_frequency",
+            ]
+        }})
+        self.assertEqual(d["nfr_depth"], "standard")
+
+    def test_nfr_depth_deep_with_named_priorities_produces_detail_lines(self) -> None:
+        from ai_test_strategy_generator.input_loader import load_input
+        from ai_test_strategy_generator.context_classifier import classify_context
+        from ai_test_strategy_generator.rule_engine import apply_rules
+        from ai_test_strategy_generator.renderer import render_strategy
+
+        # nfr-heavy-api has nfr_priority=high and named nfr_priorities
+        pkg = load_input(Path("benchmarks/nfr-heavy-api.input.yaml"))
+        c = classify_context(pkg)
+        d = apply_rules(c)
+        assert d["nfr_depth"] == "deep", "Precondition: nfr-heavy-api must produce nfr_depth=deep"
+        md = render_strategy(pkg, c, d)
+        detail_lines = [l for l in md.splitlines() if "NFR Detail:" in l]
+        self.assertGreater(
+            len(detail_lines),
+            0,
+            "nfr_depth=deep with named priorities must produce at least one NFR Detail: line",
+        )
+
+    def test_nfr_depth_standard_produces_single_fallback_line(self) -> None:
+        from ai_test_strategy_generator.input_loader import load_input
+        from ai_test_strategy_generator.context_classifier import classify_context
+        from ai_test_strategy_generator.rule_engine import apply_rules
+        from ai_test_strategy_generator.renderer import render_strategy
+
+        # brownfield-partial-automation has nfr_priority=standard and no named priorities
+        pkg = load_input(Path("benchmarks/brownfield-partial-automation.input.yaml"))
+        c = classify_context(pkg)
+        d = apply_rules(c)
+        assert d["nfr_depth"] == "standard", "Precondition: benchmark must produce nfr_depth=standard"
+        md = render_strategy(pkg, c, d)
+        detail_lines = [l for l in md.splitlines() if "NFR Detail:" in l]
+        nfr_priority_lines = [l for l in md.splitlines() if "Non-Functional Priorities:" in l]
+        self.assertEqual(len(detail_lines), 0, "nfr_depth=standard must not produce NFR Detail: lines")
+        self.assertEqual(len(nfr_priority_lines), 1, "nfr_depth=standard must produce exactly one Non-Functional Priorities: line")
+
+    def test_nfr_deep_per_priority_covers_all_named_priorities(self) -> None:
+        from ai_test_strategy_generator.input_loader import load_input
+        from ai_test_strategy_generator.context_classifier import classify_context
+        from ai_test_strategy_generator.rule_engine import apply_rules
+        from ai_test_strategy_generator.renderer import render_strategy
+
+        pkg = load_input(Path("benchmarks/nfr-heavy-api.input.yaml"))
+        named_priorities = pkg.normalized.get("nfr_priorities", [])
+        c = classify_context(pkg)
+        d = apply_rules(c)
+        md = render_strategy(pkg, c, d)
+        for priority in named_priorities:
+            self.assertTrue(
+                any(f"NFR Detail: {priority}" in line for line in md.splitlines()),
+                f"Expected 'NFR Detail: {priority}' line for named priority '{priority}'",
+            )
+
+
 if __name__ == "__main__":
     unittest.main()
