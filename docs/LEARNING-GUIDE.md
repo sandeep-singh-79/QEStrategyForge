@@ -227,6 +227,53 @@ Templates are plain text with Python `str.format()` placeholders. To add a new s
 
 For a deeper treatment — template anatomy, output contract design, repair mechanism, how to extend, and evaluation patterns — see [Prompt Engineering](PROMPT-ENGINEERING.md).
 
+## How Non-Functional Requirements Affect Strategy
+
+Non-functional requirements (NFRs) — performance, security, resilience, accessibility, compliance — are not an afterthought. They are quality attributes that must be treated as testable requirements, not implicit assumptions.
+
+### When To Specify NFR Priorities
+
+Include the `nfr_priorities` field in your input YAML when:
+- the engagement has explicit SLAs, latency targets, or throughput requirements
+- the system is in a regulated domain with documented security or privacy obligations
+- the system must handle failure gracefully (resilience, chaos readiness)
+- accessibility obligations exist (WCAG, EAA, ADA)
+
+Omit it when the engagement has no stated NFR context. The system will still produce a standard strategy with a `Non-Functional Priorities:` section noting that no NFR priorities were identified.
+
+### What `nfr_depth` Means
+
+The `nfr_priority` classifier dimension and `nfr_depth` decision key control how prominently NFRs are treated:
+
+| Input | Classifier Result | Strategy Depth |
+|---|---|---|
+| `nfr_priorities` has 2+ entries | `nfr_priority: high` | `nfr_depth: deep` — NFRs named prominently |
+| `nfr_priorities` has 1 entry | `nfr_priority: standard` | `nfr_depth: standard` — NFRs noted |
+| No `nfr_priorities` field | `nfr_priority: standard` | `nfr_depth: standard` — generic note |
+
+### Current Known Limitation
+
+The `Non-Functional Priorities:` output label appears in every strategy output regardless of whether `nfr_priorities` was provided. The content falls back to a generic note when no priorities were given. This is acceptable for strategy documents — NFRs are always relevant — but the differentiation between a deep and standard output is not yet fully realised.
+
+If `nfr_priorities` was not provided and you see `Non-Functional Priorities: standard` in the output, this is by design. Future work will make the section conditional.
+
+### Example Input With NFR Priorities
+
+```yaml
+nfr_priorities:
+  - performance
+  - security
+  - resilience
+```
+
+This drives `nfr_priority: high` classification and `nfr_depth: deep` rule output, which names performance, security, and resilience as first-class strategy concerns in the output document.
+
+For a full treatment of individual NFR testing types, see the Testing Type Deep-Dives in this guide:
+- [Performance Testing](TESTING-TYPE-PERFORMANCE.md)
+- [Security Testing in the Pipeline](TESTING-TYPE-SECURITY.md)
+- [Chaos and Resilience Testing](TESTING-TYPE-CHAOS.md)
+- [Accessibility Testing](TESTING-TYPE-ACCESSIBILITY.md)
+
 ## Learning Exercises For This Repo
 
 1. Compare strategy for two system types — use the [Situations Catalogue](SITUATIONS-CATALOGUE.md):

@@ -54,12 +54,10 @@ Current state, decisions, and active priorities for the `ai-test-strategy-genera
 - After Phase 10: merge to master, park repo, transition to intelligent-regression-optimizer.
 
 ## Active Next Work
-- Phase 10 COMPLETE. Commits: `77e492d`, `314c776`, `225c707`. 345 tests passing.
-- Phase 11 PLANNED: Content Depth + NFR Support + Self-Benchmark. See `docs/PHASE-11-IMPLEMENTATION-PLAN.md`.
-  - Phase A: Content-depth assertions (independent, start first)
-  - Phase B: NFR vertical slice B1→B5 (input → classifier → rule → prompt/validator/renderer → benchmark)
-  - Phase C: QEStrategyForge self-benchmark (depends on B4)
-- After Phase 11: merge phase-5-artifact-ingestion → master, push, initialize intelligent-regression-optimizer.
+- Phase 11 COMPLETE. Commit: `eb8d1f8`. 373 non-live tests passing. Branch: `phase-5-artifact-ingestion`.
+- Docs updated: README, USAGE-GUIDE, LEARNING-GUIDE (NFR section added). All stale counts corrected.
+- Next: force-push branch after amend, then merge `phase-5-artifact-ingestion` → `main`, push to origin.
+- After merge: park this repo, initialize `intelligent-regression-optimizer`.
 
 ## Blockers
 - No setup blocker.
