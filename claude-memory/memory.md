@@ -10,7 +10,7 @@ Current state, decisions, and active priorities for the `ai-test-strategy-genera
 ## Capability Context
 - Repository purpose: build a business-facing AI-native QE system that generates a test strategy from inputs such as RFP scope, requirements, system landscape, and constraints.
 - Product intent clarified on 2026-04-17: this is a decision-support tool for a Test Architect / QA Lead to produce client-specific test strategies from engagement inputs. It is not a general QA strategy generator for autonomous AI agents.
-- Current stage: deterministic MVP with Phase 4 complete.
+- Current stage: **MVP SEALED at v1.0.0**. All phases complete (4, 5, 6, 7, 8, 10, 11, 12). 489 tests passing, 97% coverage.
 - This is the first business-capability-first repository in the broader Agentic Upskilling program.
 
 ## Why This Capability First
@@ -55,9 +55,8 @@ Current state, decisions, and active priorities for the `ai-test-strategy-genera
 - After Phase 10: merge to master, park repo, transition to intelligent-regression-optimizer.
 
 ## Active Next Work
-- Phase 12 COMPLETE. All 6 review items addressed (P12-A through P12-F). 407 non-live tests passing.
-- Branch: `phase-5-artifact-ingestion`. Ready for PR merge.
-- Next action: merge PR to main, then park this repo and initialize `intelligent-regression-optimizer`.
+- MVP is sealed. Capability is parked.
+- Next system: `release-risk-scoring-engine` (third capability).
 
 ## Blockers
 - No setup blocker.

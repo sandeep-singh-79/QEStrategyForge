@@ -2,7 +2,7 @@
 
 > **Purpose:** Track the active planning and execution steps for the `ai-test-strategy-generator` repository.
 > **Scope:** Session-specific or cycle-specific. Refresh as milestones move and promote durable outcomes into `claude-memory/`.
-> **Last Updated:** 2026-04-17
+> **Last Updated:** 2026-04-21
 
 ---
 
@@ -11,9 +11,9 @@
 | Field | Value |
 |---|---|
 | Capability | ai-test-strategy-generator |
-| Objective | Phase 6 bounded LLM integration — delivered |
-| Current Phase | Phase 11 Complete — Phase 12 Planned (Codex review 2026-04-17) |
-| Current Focus | Phase 12: renderer depth, section-aware validation, input schema expansion, NFR rendering, optimizer fix |
+| Objective | MVP SEALED |
+| Current Phase | All phases complete (4–8, 10–12) |
+| Current Focus | None — capability sealed at v1.0.0; moving to Release Risk Scoring Engine |
 
 ---
 
